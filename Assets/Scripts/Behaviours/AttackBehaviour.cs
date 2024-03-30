@@ -30,6 +30,9 @@ public class AttackBehaviour : StateMachineBehaviour
     // OnStateExit is called when a transition ends and the state machine finishes evaluating this state
     override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
-        state.ApplyChange("status", Status.OK);
+        Stats newStats = state.stats;
+        newStats.status = Status.OK;
+        state.ApplyChanges(newStats);
+        // state.ApplyChange("status", Status.OK);
     }
 }

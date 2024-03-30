@@ -4,11 +4,13 @@ using UnityEngine;
 
 public class Deadzone : MonoBehaviour
 {
-    private void OnTriggerEnter2D(Collider2D other) {
+    private void OnTriggerExit2D(Collider2D other) {
         if(other.gameObject.GetComponent<BaseState>() != null)
         {
             var state = other.gameObject.GetComponent<BaseState>();
-            state.ApplyChange((typeof(BaseState).GetProperty("HP"), 0));
+            Stats newStats = state.stats;
+            newStats.HP = 0;
+            state.ApplyChanges(newStats);
         }   
     }
 }

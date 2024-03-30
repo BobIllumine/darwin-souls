@@ -9,7 +9,6 @@ using UnityEngine;
 
 public class Fireball : Action, IEffect, IProjectile, ITarget, IStateDependent, ITransient
 {
-    protected Dictionary<string, Func<object, object>> _statChangeMapping;
     // ITransient
     public float duration { get; protected set; }
     // IStateDependent
@@ -27,18 +26,29 @@ public class Fireball : Action, IEffect, IProjectile, ITarget, IStateDependent, 
     public float AS_mult { get; protected set; }
     public float CR_d { get; protected set; }
     public float CR_mult { get; protected set; }
-    public Status newStatus { get; protected set; }
-    public Dictionary<PropertyInfo, object> GetModifiedStats(BaseState state)
+    public Status? newStatus { get; protected set; }
+    public virtual Stats GetModifiedStats(BaseState state)
     {
-        string[] statsArr = {"HP", "status"};
-        List<string> statChange = new List<string>(statsArr);
-        Dictionary<PropertyInfo, object> stats = new Dictionary<PropertyInfo, object>();
-        foreach(string stat in statChange)
-        {
-            PropertyInfo prop = state.GetType().GetProperty(stat);
-            stats.Add(prop, _statChangeMapping[stat](prop.GetValue(state)));   
-        }
-        return stats;
+        // string[] statsArr = {"HP"};
+        // List<string> statChange = new List<string>(statsArr);
+        // Dictionary<PropertyInfo, object> stats = new Dictionary<PropertyInfo, object>();
+        // foreach(string stat in statChange)
+        // {
+        //     PropertyInfo prop = state.GetType().GetProperty(stat);
+        //     stats.Add(prop, _statChangeMapping[stat](prop.GetValue(state)));
+            
+        // }
+        // return stats;
+        Stats newStats = state.stats;
+
+        newStats.MaxHP = (int)(maxHP_mult * newStats.MaxHP + maxHP_d);
+        newStats.HP = (int)(curHP_mult * newStats.HP + curHP_d);
+        newStats.AD = (int)(AD_mult * newStats.AD + AD_d);
+        newStats.MS = (float)(MS_mult * newStats.MS + MS_d);
+        newStats.AS = (float)(AS_mult * newStats.AS + AS_d);
+        newStats.CR = (float)(CR_mult * newStats.CR + CR_d);
+        newStats.status = newStatus is null ? newStats.status : (Status)newStatus;
+        return newStats;
     }
     // IProjectile
     public GameObject projectile { get; protected set; }
@@ -94,23 +104,14 @@ public class Fireball : Action, IEffect, IProjectile, ITarget, IStateDependent, 
         projectile = Resources.Load<GameObject>("Prefabs/Projectiles/Fireball");
     }
     void Update() {
-        curHP_d = -(int)(state.AD * 0.2f) - 10;
+        curHP_d = -(int)(state.stats.AD * 0.2f) - 10;
     }
     public override Action Initialize(GameObject obj) 
     {
         animResolver = obj.GetComponent<BaseAnimResolver>();
         state = obj.GetComponent<BaseState>();
-        curHP_d = -(int)(state.AD * 0.2f) - 10;
+        curHP_d = -(int)(state.stats.AD * 0.2f) - 10;
         duration = 1;
-        _statChangeMapping = new Dictionary<string, Func<object, object>>() {
-            ["MaxHP"] = max_hp => (int)(maxHP_mult * (int)max_hp + maxHP_d),
-            ["HP"] = hp => (int)(curHP_mult * (int)hp + curHP_d),
-            ["AD"] = ad => (int)(AD_mult * (int)ad + AD_d),
-            ["MS"] = ms => (float)(MS_mult * (float)ms + MS_d),
-            ["AS"] = @as => (float)(AS_mult * (float)@as + AS_d),
-            ["CR"] = cr => (float)(CR_mult * (float)cr + CR_d),
-            ["status"] = _ => newStatus
-        };
         return this;
     }
 }

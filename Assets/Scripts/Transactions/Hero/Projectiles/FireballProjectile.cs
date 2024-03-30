@@ -21,6 +21,7 @@ public class FireballProjectile : BaseProjectile
         || transform.parent.gameObject.CompareTag("Enemy") && other.gameObject.CompareTag("Player")) {
             SendMessageUpwards("OnHit", other);
         }
+        DestroyOnHit();
     }
     void DestroyOnHit() {
         Destroy(gameObject);

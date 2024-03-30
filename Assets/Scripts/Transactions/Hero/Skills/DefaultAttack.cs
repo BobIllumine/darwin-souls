@@ -24,19 +24,19 @@ public class DefaultAttack : Action, IEffect, ITarget, IStateDependent, IMobilit
     public float AS_mult { get; protected set; }
     public float CR_d { get; protected set; }
     public float CR_mult { get; protected set; }
-    public Status newStatus { get; protected set; }
-    public Dictionary<PropertyInfo, object> GetModifiedStats(BaseState state)
+    public Status? newStatus { get; protected set; }
+    public Stats GetModifiedStats(BaseState state)
     {
-        string[] statsArr = {"HP"};
-        List<string> statChange = new List<string>(statsArr);
-        Dictionary<PropertyInfo, object> stats = new Dictionary<PropertyInfo, object>();
-        foreach(string stat in statChange)
-        {
-            PropertyInfo prop = state.GetType().GetProperty(stat);
-            stats.Add(prop, _statChangeMapping[stat](prop.GetValue(state)));
-            
-        }
-        return stats;
+        Stats newStats = state.stats;
+
+        newStats.MaxHP = (int)(maxHP_mult * newStats.MaxHP + maxHP_d);
+        newStats.HP = (int)(curHP_mult * newStats.HP + curHP_d);
+        newStats.AD = (int)(AD_mult * newStats.AD + AD_d);
+        newStats.MS = (float)(MS_mult * newStats.MS + MS_d);
+        newStats.AS = (float)(AS_mult * newStats.AS + AS_d);
+        newStats.CR = (float)(CR_mult * newStats.CR + CR_d);
+        newStats.status = newStatus is null ? newStats.status : (Status)newStatus;
+        return newStats;
     }
     // IMobility
     public BaseMovementController movementController { get; protected set; }
@@ -53,11 +53,6 @@ public class DefaultAttack : Action, IEffect, ITarget, IStateDependent, IMobilit
     public override void UseOnState(BaseState state, float cr)
     {
         state.ApplyChanges(GetModifiedStats(state));
-        foreach(var item in state.GetLastImpact()) 
-        {
-            Debug.Log(item.Key);
-            Debug.Log(item.Value);
-        }
     }
     private void OnTriggerEnter2D(Collider2D other)
     {
@@ -84,13 +79,13 @@ public class DefaultAttack : Action, IEffect, ITarget, IStateDependent, IMobilit
         CR_d = 0f;
         CR_mult = 1f;
         reward = 0f;
-        newStatus = Status.OK;
+        newStatus = null;
         status = ActionStatus.ATTACK;
         targetStatus = ActionStatus.HURT;
     }
     void Update() 
     {
-        curHP_d = -state.AD;
+        curHP_d = -state.stats.AD;
         reward = curHP_d;
     }
     public override Action Initialize(GameObject obj) 
@@ -99,16 +94,8 @@ public class DefaultAttack : Action, IEffect, ITarget, IStateDependent, IMobilit
         animResolver = obj.GetComponent<BaseAnimResolver>();
         state = obj.GetComponent<BaseState>();
         agent = obj.GetComponent<BaseAgent>();
-        curHP_d = -state.AD;
+        curHP_d = -state.stats.AD;
         reward = curHP_d;
-        _statChangeMapping = new Dictionary<string, Func<object, object>>() {
-            ["MaxHP"] = max_hp => (int)(maxHP_mult * (int)max_hp + maxHP_d),
-            ["HP"] = hp => (int)(curHP_mult * (int)hp + curHP_d),
-            ["AD"] = ad => (int)(AD_mult * (int)ad + AD_d),
-            ["MS"] = ms => (float)(MS_mult * (float)ms + MS_d),
-            ["AS"] = @as => (float)(AS_mult * (float)@as + AS_d),
-            ["CR"] = cr => (float)(CR_mult * (float)cr + CR_d)
-        };
         return this;
     }
 }

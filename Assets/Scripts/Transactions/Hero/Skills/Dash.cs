@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.InteropServices.WindowsRuntime;
+using UnityEditor.Rendering;
 using UnityEngine;
 
 public class Dash : Action, IMobility, IStateDependent
@@ -14,15 +16,17 @@ public class Dash : Action, IMobility, IStateDependent
         if(!isAvailable)
             return;
             
-        PropertyInfo ms = state.GetType().GetProperty("MS");
+        Stats newStats = state.stats;
+        newStats.MS *= 5;
+        state.ApplyChanges(newStats);
 
-        state.ApplyChange((ms, state.MS * 5));
         
-        StartCoroutine(movementController.ApplyVelocity(new Vector2(state.MS * animResolver.faceTowards, 0), 0.1f, 0));
+        StartCoroutine(movementController.ApplyVelocity(new Vector2(state.stats.MS * animResolver.faceTowards, 0), 0.1f, 0));
         
         animResolver.ChangeStatus(status);
         
-        state.ApplyChange((ms, state.MS / 5));
+        newStats.MS /= 5;
+        state.ApplyChanges(newStats);
 
         StartCoroutine(StartCooldown(cr));
     }
@@ -38,9 +42,9 @@ public class Dash : Action, IMobility, IStateDependent
     }
     public override Action Initialize(GameObject obj) 
     {
-        this.animResolver = obj.GetComponent<BaseAnimResolver>();
-        this.state = obj.GetComponent<BaseState>();
-        this.movementController = obj.GetComponent<BaseMovementController>();
+        animResolver = obj.GetComponent<BaseAnimResolver>();
+        state = obj.GetComponent<BaseState>();
+        movementController = obj.GetComponent<BaseMovementController>();
         return this;
     }
 }

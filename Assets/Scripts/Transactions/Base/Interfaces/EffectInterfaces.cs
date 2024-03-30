@@ -17,8 +17,8 @@ public interface IEffect
     public float AS_mult { get; }
     public float CR_d { get; }
     public float CR_mult { get; }
-    public Status newStatus { get; }
-    public Dictionary<PropertyInfo, object> GetModifiedStats(BaseState state);
+    public Status? newStatus { get; }
+    public Stats GetModifiedStats(BaseState state);
 }
 
 public interface ITransient
@@ -45,6 +45,6 @@ public interface IBuff
     public float self_AS_mult { get; }
     public float self_CR_d { get; }
     public float self_CR_mult { get; }
-    public Status self_newStatus { get; }
-    public Dictionary<PropertyInfo, object> GetSelfModifiedStats(BaseState state);
+    public Status? self_newStatus { get; }
+    public Stats GetSelfModifiedStats(BaseState state);
 }

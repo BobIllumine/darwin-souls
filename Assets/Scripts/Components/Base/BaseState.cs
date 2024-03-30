@@ -7,50 +7,38 @@ using System.Reflection;
 
 public abstract class BaseState : MonoBehaviour
 {
-    private int _curHP, _maxHP; 
-    public int HP 
-    { 
-        get { return _curHP; } 
-        protected set { _curHP = value > _maxHP ? _maxHP : value; } 
-    }
-    public int MaxHP 
+    private Stats _stat = new Stats();
+    public Stats stats
     {
-        get { return _maxHP; }
-        protected set { _maxHP = value; _curHP = _maxHP < _curHP ? _maxHP : _curHP; }
+        get { return _stat; }
+        protected set { _stat = value; }
     }
-
     public BaseActionController actionController { get; protected set; }
     public BaseMovementController movementController { get; protected set; }
     public BaseAnimResolver animResolver { get; protected set; }
-    public int AD { get; protected set; }
-    public float MS { get; protected set; }
-    public float AS { get; protected set; }
-    public float CR { get; protected set; }
-    public Status status { get; protected set; }
-    protected Dictionary<PropertyInfo, (object, object)> lastImpact;
-    public abstract Dictionary<PropertyInfo, (object, object)> GetLastImpact();
-    public abstract void ApplyChange((PropertyInfo, object) stat);
-    public abstract void ApplyChange(string name, object stat);
-    public abstract void ApplyChanges(Dictionary<PropertyInfo, object> other);
-    public abstract void ApplyTimedChanges(Dictionary<PropertyInfo, object> other, float duration);
-    public virtual IEnumerator TimedRevert(Dictionary<PropertyInfo, object> copy, float duration) {
+    protected (Stats, Stats) lastImpact;
+    public abstract (Stats, Stats) GetLastImpact();
+    public abstract void ApplyChanges(Stats other);
+    public abstract void ApplyTimedChanges(Stats other, float duration);
+    public virtual IEnumerator TimedRevert(Stats copy, float duration) {
         yield return new WaitForSeconds(duration);
         ApplyChanges(copy);
     }
-
-    public virtual void DestroyOnDeath() 
+    
+    public virtual void OnDeath() 
     {
-        Destroy(gameObject);
+        animResolver.ChangeStatus(ActionStatus.DIE);
+        
     }
-    protected virtual void Update() 
+    public virtual void Update() 
     {
-        if(HP <= 0)
+        if(stats.HP <= 0)
         {
-            animResolver.ChangeStatus(ActionStatus.DIE);
+            OnDeath();
             return;
         }
 
-        switch(status) {
+        switch(stats.status) {
             case Status.OK:
                 actionController.canAttack = true;
                 actionController.canCast = true;
@@ -75,8 +63,4 @@ public abstract class BaseState : MonoBehaviour
         }
     }
 
-    protected PropertyInfo[] GetBaseProperties() 
-    {
-        return typeof(BaseState).GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public);
-    }
 }

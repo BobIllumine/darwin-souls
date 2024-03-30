@@ -1,10 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Reflection;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.TerrainTools;
 
 public class HeroState : BaseState
 {
@@ -16,62 +12,47 @@ public class HeroState : BaseState
     [SerializeField] private float defaultCR = 0.0f;
     [SerializeField] private Status defaultStatus = Status.OK;
 
-    public override void ApplyChange(string name, object stat)
+    public override void ApplyChanges(Stats other)
     {
-        PropertyInfo info = this.GetType().GetProperty(name);
-        ApplyChange((info, stat));
-    }
-    public override void ApplyChange((PropertyInfo, object) stat)
-    {
-        PropertyInfo prop = stat.Item1;
-        object value = stat.Item2;
-        lastImpact[prop] = (prop.GetValue(this), value);
-        prop.SetValue(this, value);
+        lastImpact = (stats, other);
+        stats = other;
     }
 
-    public override void ApplyChanges(Dictionary<PropertyInfo, object> other)
-    {
-        foreach (KeyValuePair<PropertyInfo, object> pair in other)
-            ApplyChange((pair.Key, pair.Value));
-    }
-
-    public override Dictionary<PropertyInfo, (object, object)> GetLastImpact()
+    public override (Stats, Stats) GetLastImpact()
     {
         return lastImpact;   
     }
 
-    public override void ApplyTimedChanges(Dictionary<PropertyInfo, object> other, float duration)
+    public override void ApplyTimedChanges(Stats other, float duration)
     {
-        Dictionary<PropertyInfo, object> copy = new Dictionary<PropertyInfo, object>();
-        foreach (PropertyInfo prop in GetBaseProperties())
-            copy.Add(prop, prop.GetValue(this));
+        Stats copy = stats;
         ApplyChanges(other);
         StartCoroutine(TimedRevert(copy, duration));
     }
 
-    protected override void Update()
+    public override void Update()
     {
         base.Update();
-        animResolver.ChangeFloat("attackSpeed", AS);
+        animResolver.ChangeFloat("attackSpeed", stats.AS);
     }
 
-    public override void DestroyOnDeath()
+    public override void OnDeath()
     {
-        base.DestroyOnDeath();
+        base.OnDeath();
     }
 
     void Awake()
     {
-        lastImpact = new Dictionary<PropertyInfo, (object, object)>();
         movementController = GetComponent<HeroMovementController>();
         actionController = GetComponent<HeroActionController>();
         animResolver = GetComponent<HeroAnimResolver>();
-        MaxHP = defaultMaxHP;
-        HP = defaultHP;
-        AD = defaultAD;
-        MS = defaultMS;
-        AS = defaultAS;
-        CR = defaultCR;
-        status = defaultStatus;
+        stats.MaxHP = defaultMaxHP;
+        stats.HP = defaultHP;
+        stats.AD = defaultAD;
+        stats.MS = defaultMS;
+        stats.AS = defaultAS;
+        stats.CR = defaultCR;
+        stats.status = defaultStatus;
+        lastImpact = (null, stats);
     }
 }

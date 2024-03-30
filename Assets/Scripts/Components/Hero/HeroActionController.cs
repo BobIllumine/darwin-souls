@@ -23,18 +23,22 @@ public class HeroActionController : BaseActionController
     }
     public override void Do(string name)
     {
-        if(!isActionable || (!canCast && name != "defaultAttack") || (!canAttack && name == "defaultAttack"))
+        if(!isActionable || (!canCast && name != "defaultAttack") || (!canAttack && name == "defaultAttack") || !movementController.isGrounded)
             return;
         try
         {
             activeAction = actionSpace[name];
-            state.ApplyChange("status", Status.STUNNED);
-            activeAction.Fire(state.CR);
+            Stats newStats = state.stats;
+            newStats.status = Status.STUNNED;
+            state.ApplyChanges(newStats);
+            activeAction.Fire(state.stats.CR);
         }
         catch(KeyNotFoundException e)
         {
             print(e);
-            state.ApplyChange("status", Status.OK);
+            Stats newStats = state.stats;
+            newStats.status = Status.OK;
+            state.ApplyChanges(newStats);
             Debug.Log("bad luck kiddo");
             return;    
         }

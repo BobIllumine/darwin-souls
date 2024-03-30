@@ -52,23 +52,29 @@ public class HeroMovementController : BaseMovementController
     {
         if(isDashing || !isMovable)
             return;
-        body.velocity = new Vector2(direction.x * state.MS * Time.fixedDeltaTime, body.velocity.y);
+        body.velocity = new Vector2(direction.x * state.stats.MS * Time.fixedDeltaTime, body.velocity.y);
         velocity = body.velocity;
         // print(isGrounded);
         if(body.velocity.y < 0)
             body.gravityScale = _fallScale;
     }
+    public override void Teleport(Vector2 position)
+    {
+        transform.position = position;
+    }
     public override void Stop()
     {
         body.velocity = Vector2.zero;
-        state.ApplyChange("status", Status.STUNNED);
+        Stats newStats = state.stats;
+        newStats.status = Status.STUNNED;
+        state.ApplyChanges(newStats);
     }
     public override void Jump() 
     {
         if(!isGrounded || !isMovable)
             return;
         body.gravityScale = _startScale;
-        float jumpHeight = Mathf.Sqrt(state.MS) / 4;
+        float jumpHeight = Mathf.Sqrt(state.stats.MS) / 4;
         float jumpForce = Mathf.Sqrt(jumpHeight * (Physics2D.gravity.y * body.gravityScale) * -2) * body.mass;
         body.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
     }
@@ -108,22 +114,21 @@ public class HeroMovementController : BaseMovementController
 
     private void OnCollisionEnter2D(Collision2D other)
     {
-        isGrounded = true;
-        if(other.gameObject.layer == 7) 
-        {
-            isGrounded = false;
-            animResolver.ChangeStatus(ActionStatus.HURT);
-            agent.AddReward(-0.1f);
-        }
+        isGrounded = other.gameObject.layer == 3;
+        // if(other.gameObject.layer == 7) 
+        // {
+        //     isGrounded = false;
+        //     animResolver.ChangeStatus(ActionStatus.HURT);
+        //     agent.AddReward(-0.1f);
+        // }
     }
     private void OnCollisionExit2D(Collision2D other)
     {
-        isGrounded = false;
-        print(isGrounded);
-        if(other.gameObject.layer == 7)
-        {
-            state.ApplyChange("status", Status.OK);
-            agent.AddReward(0.1f);
-        }
+        isGrounded = !(other.gameObject.layer == 3);
+        // if(other.gameObject.layer == 7)
+        // {
+        //     state.ApplyChange("status", Status.OK);
+        //     agent.AddReward(0.1f);
+        // }
     }
 }

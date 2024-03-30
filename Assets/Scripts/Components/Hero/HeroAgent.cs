@@ -6,6 +6,7 @@ using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
 using Unity.VisualScripting;
 using System.Linq;
+using UnityEngine.InputSystem;
 
 
 public class HeroAgent : BaseAgent
@@ -13,25 +14,32 @@ public class HeroAgent : BaseAgent
     private HeroState state;
     private BaseState oppState;
 
+    public override void ResetParameters()
+    {
+        base.ResetParameters();
+        state.ApplyChanges(initialStats);
+    }
     public override void Initialize()
     {
         state = GetComponent<HeroState>();
         oppState = opponent.GetComponent<BaseState>();
         actionController = GetComponent<HeroActionController>();
         movementController = GetComponent<HeroMovementController>();
-        ResetParameters();
+        initialPos = transform.position;
+        initialStats = state.stats;
+        // ResetParameters();
     }
 
     public override void OnEpisodeBegin()
     {
-        Debug.Log(GetCumulativeReward());
+        Debug.Log(CompletedEpisodes);
         ResetParameters();
     }
 
     public override void CollectObservations(VectorSensor sensor)
     {
-        sensor.AddObservation(new List<float>() { oppState.HP, oppState.MS, oppState.AD, oppState.AS });
-        sensor.AddObservation(new List<float>() { state.HP, state.MS, state.AD, state.AS });
+        sensor.AddObservation(new List<float>() { oppState.stats.HP, oppState.stats.MS, oppState.stats.AD, oppState.stats.AS });
+        sensor.AddObservation(new List<float>() { state.stats.HP, state.stats.MS, state.stats.AD, state.stats.AS });
     }
 
     public override void OnActionReceived(ActionBuffers actions)
@@ -52,14 +60,14 @@ public class HeroAgent : BaseAgent
             default:
                 break;
         }
-        if(oppState.HP == 0)
+        if(oppState.stats.HP == 0)
         {
             AddReward(100f);
             EndEpisode(); 
         }
-        if(state.HP == 0) 
+        if(state.stats.HP == 0) 
         {
-            AddReward(-20f);
+            AddReward(-100f);
             EndEpisode();
         }
         // Debug.Log(GetCumulativeReward());

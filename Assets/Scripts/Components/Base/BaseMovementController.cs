@@ -12,6 +12,7 @@ public abstract class BaseMovementController : MonoBehaviour
     public abstract int[] isMoving();
     public Vector2 direction { get; protected set; }
     public Vector2 velocity { get; protected set; }
+    public abstract void Teleport(Vector2 position);
     public abstract void Jump();
     public abstract void Move(float direction);
     public abstract void Stop();

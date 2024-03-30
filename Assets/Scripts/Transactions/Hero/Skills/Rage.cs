@@ -25,17 +25,19 @@ public class Rage : Action, IStateDependent, IBuff, ITransient
     public float self_AS_mult { get; protected set; }
     public float self_CR_d { get; protected set; }
     public float self_CR_mult { get; protected set; }
-    public Status self_newStatus { get; protected set; }
-    public Dictionary<PropertyInfo, object> GetSelfModifiedStats(BaseState state) {
-        string[] statsArr = {"HP", "AD", "MS", "AS"};
-        List<string> statChange = new List<string>(statsArr);
-        Dictionary<PropertyInfo, object> stats = new Dictionary<PropertyInfo, object>();
-        foreach(string stat in statChange)
-        {
-            PropertyInfo prop = state.GetType().GetProperty(stat);
-            stats.Add(prop, _selfStatChangeMapping[stat](prop.GetValue(state)));
-        }
-        return stats;
+    public Status? self_newStatus { get; protected set; }
+    public virtual Stats GetSelfModifiedStats(BaseState state)
+    {
+        Stats newStats = state.stats;
+
+        newStats.MaxHP = (int)(self_maxHP_mult * newStats.MaxHP + self_maxHP_d);
+        newStats.HP = (int)(self_curHP_mult * newStats.HP + self_curHP_d);
+        newStats.AD = (int)(self_AD_mult * newStats.AD + self_AD_d);
+        newStats.MS = (float)(self_MS_mult * newStats.MS + self_MS_d);
+        newStats.AS = (float)(self_AS_mult * newStats.AS + self_AS_d);
+        newStats.CR = (float)(self_CR_mult * newStats.CR + self_CR_d);
+        newStats.status = self_newStatus is null ? newStats.status : (Status)self_newStatus;
+        return newStats;
     }
     // Action
     public override void Fire(float cr)
@@ -85,14 +87,6 @@ public class Rage : Action, IStateDependent, IBuff, ITransient
         self_AS_mult = 1.5f;
         self_MS_mult = 1.5f;
 
-        _selfStatChangeMapping = new Dictionary<string, Func<object, object>>() {
-            ["MaxHP"] = max_hp => (int)(self_maxHP_mult * (int)max_hp + self_maxHP_d),
-            ["HP"] = hp => (int)(self_curHP_mult * (int)hp + self_curHP_d),
-            ["AD"] = ad => (int)(self_AD_mult * (int)ad + self_AD_d),
-            ["MS"] = ms => (float)(self_MS_mult * (float)ms + self_MS_d),
-            ["AS"] = @as => (float)(self_AS_mult * (float)@as + self_AS_d),
-            ["CR"] = cr => (float)(self_CR_mult * (float)cr + self_CR_d)
-        };
         return this;
     }
 

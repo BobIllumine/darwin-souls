@@ -16,13 +16,17 @@ public class Stomp : Action, IMobility, IStateDependent
             
         PropertyInfo ms = state.GetType().GetProperty("MS");
 
-        state.ApplyChange((ms, state.MS * 10));
+        Stats newStats = state.stats;
+        newStats.MS *= 10;
+        state.ApplyChanges(newStats);
+
         
-        StartCoroutine(movementController.ApplyVelocity(new Vector2(0, -state.MS), 0.1f, 0));
+        StartCoroutine(movementController.ApplyVelocity(new Vector2(0, -state.stats.MS), 0.1f, 0));
         
         animResolver.ChangeStatus(status);
         
-        state.ApplyChange((ms, state.MS / 10));
+        newStats.MS *= 10;
+        state.ApplyChanges(newStats);
 
         StartCoroutine(StartCooldown(cr));
     }
