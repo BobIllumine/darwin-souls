@@ -13,8 +13,8 @@ public class GameManager : MonoBehaviour
         stats = new Dictionary<string, Stats>();
         foreach(var agent in agents) 
         {
-            print(agent.name);
-            print(agent.transform.position);
+            // print(agent.name);
+            // print(agent.transform.position);
             positions[agent.name] = agent.transform.position;
             stats[agent.name] = agent.GetComponent<BaseState>().stats;
         }

@@ -38,7 +38,7 @@ public static class Mappings
         [Button.SKILL_2] = KeyCode.J,
         [Button.SKILL_3] = KeyCode.L,
         [Button.SKILL_4] = KeyCode.O,
-        [Button.JUMP] = KeyCode.Space
+        [Button.JUMP] = KeyCode.F
     };
     public static Dictionary<Button, KeyCode> DefaultInputMapP2 = new Dictionary<Button, KeyCode>() {
         [Button.DEFAULT_ATTACK] = KeyCode.Keypad5,

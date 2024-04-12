@@ -39,7 +39,7 @@ public class HeroActionController : BaseActionController
             Stats newStats = state.stats;
             newStats.status = Status.OK;
             state.ApplyChanges(newStats);
-            Debug.Log("bad luck kiddo");
+            // Debug.Log("bad luck kiddo");
             return;    
         }
     }

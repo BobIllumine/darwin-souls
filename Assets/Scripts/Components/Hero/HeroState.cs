@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using UnityEngine;
 
 public class HeroState : BaseState
@@ -39,6 +40,16 @@ public class HeroState : BaseState
     public override void OnDeath()
     {
         base.OnDeath();
+        if(stats.HP <= 0)
+        {
+            // Destroy(gameObject);
+            agent.AddReward(-100f);
+            agent.EndEpisode(); 
+        }
+    }
+    void Start()
+    {
+        agent = GetComponent<HeroAgent>();
     }
 
     void Awake()

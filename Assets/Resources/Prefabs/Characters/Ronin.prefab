@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 4056699302223673139}
   - component: {fileID: 7894059476009766939}
   - component: {fileID: 5350084355034368595}
-  m_Layer: 6
+  m_Layer: 8
   m_Name: HitPoint
-  m_TagString: Untagged
+  m_TagString: Projectile
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -118,7 +118,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &916781161402789605
 Transform:
   m_ObjectHideFlags: 0
@@ -178,7 +178,7 @@ SpriteRenderer:
   m_SortingOrder: 0
   m_Sprite: {fileID: 4723107735738678597, guid: 0bd97e23f8b532a4f8969605a3b00a4e, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_FlipX: 1
+  m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 2, y: 2}
@@ -342,11 +342,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6986117717716457421}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d12718d3ef9ca8fb8bd99d9051366384, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  player: 1
 --- !u!114 &6600656527006172107
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -372,7 +373,7 @@ MonoBehaviour:
   m_Model: {fileID: 0}
   m_InferenceDevice: 0
   m_BehaviorType: 0
-  m_BehaviorName: RoninBrain
+  m_BehaviorName: HeroBrain2
   TeamId: 0
   m_UseChildSensors: 1
   m_UseChildActuators: 1
@@ -410,6 +411,7 @@ MonoBehaviour:
   hasUpgradedFromAgentParameters: 1
   MaxStep: 1500
   opponent: {fileID: 0}
+  self: {fileID: 0}
 --- !u!114 &2449668088280050459
 MonoBehaviour:
   m_ObjectHideFlags: 0

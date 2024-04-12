@@ -10,14 +10,19 @@ public class BaseAgent : Agent
 {
     protected BaseMovementController movementController;
     protected BaseActionController actionController;
+
+    protected BaseInput input;
     [SerializeField] protected GameObject opponent;
+    [SerializeField] protected GameObject self;
     // [SerializeField] protected GameManager manager;
     protected Vector3 initialPos;
+    protected Quaternion initialRot;
     protected Stats initialStats;
 
     public virtual void ResetParameters() 
     {
-        movementController.Teleport(initialPos);
+        // print($"{name}, {initialPos}");
+        // movementController.Teleport(initialPos);
         // opponent = Instantiate(Resources.Load<GameObject>("Prefabs/Characters/Ronin"), new Vector3(-10, 2.5f, 0), Quaternion.identity);
     }
 }

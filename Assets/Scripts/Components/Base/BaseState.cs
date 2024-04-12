@@ -13,6 +13,7 @@ public abstract class BaseState : MonoBehaviour
         get { return _stat; }
         protected set { _stat = value; }
     }
+    public BaseAgent agent { get; protected set; }
     public BaseActionController actionController { get; protected set; }
     public BaseMovementController movementController { get; protected set; }
     public BaseAnimResolver animResolver { get; protected set; }
@@ -28,7 +29,6 @@ public abstract class BaseState : MonoBehaviour
     public virtual void OnDeath() 
     {
         animResolver.ChangeStatus(ActionStatus.DIE);
-        
     }
     public virtual void Update() 
     {

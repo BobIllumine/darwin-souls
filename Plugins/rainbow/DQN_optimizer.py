@@ -18,8 +18,6 @@ import numpy as np
 import attr
 
 
-# TODO: fix saving to onnx
-
 
 @attr.s(auto_attribs=True)
 class DQNSettings(OffPolicyHyperparamSettings):

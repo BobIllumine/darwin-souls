@@ -7,9 +7,9 @@ public class Stats
     public int HP 
     { 
         get { return _curHP; } 
-        set { _curHP = value > _maxHP ? _maxHP : value; } 
+        set { _curHP = value > _maxHP ? _maxHP : (value < 0 ? 0 : value); } 
     }
-    public int MaxHP 
+    public int MaxHP
     {
         get { return _maxHP; }
         set { _maxHP = value; _curHP = _maxHP < _curHP ? _maxHP : _curHP; }

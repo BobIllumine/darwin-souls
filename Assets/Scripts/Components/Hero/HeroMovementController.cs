@@ -10,18 +10,26 @@ using UnityEngine;
 public class HeroMovementController : BaseMovementController
 {
     private Rigidbody2D body;
+    private BoxCollider2D col;
+    private Collider2D[] results;
+    private ContactFilter2D filter;
     private float _startScale = 5;
     private float _fallScale = 8;
     private bool isDashing;
     private BaseAgent agent;
-    
+
     void Start() 
     {
         state = GetComponent<HeroState>();
         animResolver = GetComponent<HeroAnimResolver>();
+        col = GetComponent<BoxCollider2D>();
         body = GetComponent<Rigidbody2D>();
         agent = GetComponent<HeroAgent>();
         actionController = GetComponent<HeroActionController>();
+        results = new Collider2D[10];
+        filter = new ContactFilter2D();
+        filter.SetLayerMask(LayerMask.GetMask("Ground"));
+        filter.useLayerMask = true;
         isGrounded = true;
         isMovable = true;
         isDashing = false;
@@ -52,9 +60,11 @@ public class HeroMovementController : BaseMovementController
     {
         if(isDashing || !isMovable)
             return;
+        isGrounded = Physics2D.OverlapCollider(col, filter, results) > 0;
         body.velocity = new Vector2(direction.x * state.stats.MS * Time.fixedDeltaTime, body.velocity.y);
         velocity = body.velocity;
-        // print(isGrounded);
+        print($"{name}: {velocity}");
+        // print($"{name}: {isGrounded}");
         if(body.velocity.y < 0)
             body.gravityScale = _fallScale;
     }
@@ -71,6 +81,7 @@ public class HeroMovementController : BaseMovementController
     }
     public override void Jump() 
     {
+        isGrounded = Physics2D.OverlapCollider(col, filter, results) > 0;
         if(!isGrounded || !isMovable)
             return;
         body.gravityScale = _startScale;
