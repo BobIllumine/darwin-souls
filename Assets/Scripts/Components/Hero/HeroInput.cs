@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Sentis.Layers;
 using UnityEngine;
 using UnityEngine.Analytics;
 
@@ -11,7 +13,8 @@ public class HeroInput : BaseInput
     {
         actionController = GetComponent<HeroActionController>();
         movementController = GetComponent<HeroMovementController>();
-        buffer = new LimitedQueue<Button>(5);
+        queue = new LimitedQueue<InputAction>(20);
+        buffer = Time.fixedDeltaTime * 20;
         if(player == Player.P1)
         {
             buttons = Mappings.DefaultInputMapP1;
@@ -24,43 +27,53 @@ public class HeroInput : BaseInput
         }
         skillList = new List<string>();
     }
-    public override void AddButton(Button button)
+    public override void AddAction(Button button)
     {
-        buffer.Enqueue(button);
+        queue.Enqueue(new InputAction(button, Time.time, buffer));
     }
     void Update()
     {
         // buffer.Enqueue(Button.JUMP);
         if(Input.GetKeyDown(buttons[Button.JUMP]))
-            buffer.Enqueue(Button.JUMP);
+            // AddAction(Button.JUMP);
+            movementController.Jump();
         
         if(Input.GetKeyDown(buttons[Button.DEFAULT_ATTACK]))
-            buffer.Enqueue(Button.DEFAULT_ATTACK);
+            // AddAction(Button.DEFAULT_ATTACK);
+            actionController.Do("defaultAttack");
 
-        if(Input.GetKeyDown(buttons[Button.SKILL_1]))
-            actionController.Do(skillList[0]);
+        // if(Input.GetKeyDown(buttons[Button.SKILL_1]))
+        //     actionController.Do(skillList[0]);
         
-        if(Input.GetKeyDown(buttons[Button.SKILL_2]))
-            actionController.Do(skillList[1]);
+        // if(Input.GetKeyDown(buttons[Button.SKILL_2]))
+        //     actionController.Do(skillList[1]);
         
         movementController.Move(Input.GetAxis(axis));
     }
     void FixedUpdate()
     {
-        Button lastAction;
-        if(!buffer.TryDequeue(out lastAction))
-            return;
-        switch(lastAction)
+        while(queue.Count > 0) 
         {
-            case Button.JUMP:
-                movementController.Jump();
+            InputAction lastAction;
+            if(!queue.TryDequeue(out lastAction))
+                return;
+            if(lastAction.Validate())
+            {
+                switch(lastAction.button)
+                {
+                    case Button.JUMP:
+                        movementController.Jump();
+                        break;
+                    case Button.DEFAULT_ATTACK:
+                        actionController.Do("defaultAttack");
+                        break;
+                    default:
+                        break;
+                }
                 break;
-            case Button.DEFAULT_ATTACK:
-                actionController.Do("defaultAttack");
-                break;
-            default:
-                break;
+            }
         }
+        
 
         // print($"{name}: {lastAction}, {buffer.Count}");
     }

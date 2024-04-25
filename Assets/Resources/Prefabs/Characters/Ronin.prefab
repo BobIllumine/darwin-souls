@@ -111,14 +111,14 @@ GameObject:
   - component: {fileID: 6600656527006172107}
   - component: {fileID: -3619182737896981207}
   - component: {fileID: -4225641643052516922}
-  - component: {fileID: 2449668088280050459}
+  - component: {fileID: 339413293496450174}
   m_Layer: 6
   m_Name: Ronin
   m_TagString: Agent
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &916781161402789605
 Transform:
   m_ObjectHideFlags: 0
@@ -219,8 +219,8 @@ Rigidbody2D:
   m_BodyType: 0
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
-  m_UseAutoMass: 1
-  m_Mass: 13.3357115
+  m_UseAutoMass: 0
+  m_Mass: 1
   m_LinearDrag: 0
   m_AngularDrag: 0
   m_GravityScale: 1
@@ -267,7 +267,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.0010508597, y: 0.021710157}
+  m_Offset: {x: 0.004531175, y: 0.015980363}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -278,7 +278,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.26864964, y: 0.4963979}
+  m_Size: {x: 0.29739076, y: 0.50785756}
   m_EdgeRadius: 0
 --- !u!114 &3158409404103012623
 MonoBehaviour:
@@ -295,7 +295,7 @@ MonoBehaviour:
   defaultMaxHP: 100
   defaultHP: 100
   defaultAD: 10
-  defaultMS: 700
+  defaultMS: 800
   defaultAS: 1
   defaultCR: 0
   defaultStatus: 0
@@ -342,7 +342,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6986117717716457421}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d12718d3ef9ca8fb8bd99d9051366384, type: 3}
   m_Name: 
@@ -392,7 +392,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   DecisionPeriod: 5
-  DecisionStep: 0
+  DecisionStep: 4
   TakeActionsBetweenDecisions: 1
 --- !u!114 &-4225641643052516922
 MonoBehaviour:
@@ -409,10 +409,10 @@ MonoBehaviour:
   agentParameters:
     maxStep: 0
   hasUpgradedFromAgentParameters: 1
-  MaxStep: 1500
+  MaxStep: 100
   opponent: {fileID: 0}
-  self: {fileID: 0}
---- !u!114 &2449668088280050459
+  self: {fileID: 6986117717716457421}
+--- !u!114 &339413293496450174
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -421,20 +421,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 6986117717716457421}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f67c7e722ba14acd9153bb4488bff6e4, type: 3}
+  m_Script: {fileID: 11500000, guid: 282f342c2ab144bf38be65d4d0c4e07d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_SensorName: RayPerceptionSensor
-  m_DetectableTags: []
-  m_RaysPerDirection: 10
-  m_MaxRayDegrees: 70
-  m_SphereCastRadius: 5
-  m_RayLength: 80
-  m_RayLayerMask:
-    serializedVersion: 2
-    m_Bits: 4294967240
+  m_Camera: {fileID: 0}
+  m_SensorName: RoninSensor
+  m_Width: 80
+  m_Height: 45
+  m_Grayscale: 1
+  m_ObservationType: 0
+  m_RuntimeCameraEnable: 0
   m_ObservationStacks: 1
-  m_AlternatingRayOrder: 0
-  m_UseBatchedRaycasts: 0
-  rayHitColor: {r: 1, g: 0, b: 0, a: 1}
-  rayMissColor: {r: 1, g: 1, b: 1, a: 1}
+  m_Compression: 1

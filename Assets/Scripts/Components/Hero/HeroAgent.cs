@@ -51,18 +51,20 @@ public class HeroAgent : BaseAgent
 
     public override void OnActionReceived(ActionBuffers actions)
     {
+        print(actions.ContinuousActions[0]);
         float axisX = Mathf.Clamp(actions.ContinuousActions[0], -1, 1);
+        print(axisX);
         movementController.Move(axisX);
         int action = actions.DiscreteActions[0];
         print($"axis: {axisX}, action: {action}");
         switch(action)
         {
             case 1:
-                input.AddButton(Button.JUMP);
+                input.AddAction(Button.JUMP);
                 AddReward(-10f);
                 break;
             case 2:
-                input.AddButton(Button.DEFAULT_ATTACK);
+                input.AddAction(Button.DEFAULT_ATTACK);
                 AddReward(-0.1f);
                 break;
             default:

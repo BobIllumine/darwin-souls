@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Google.Protobuf.WellKnownTypes;
+using UnityEngine;
 
 public class LimitedQueue<T>
 {
@@ -51,4 +53,24 @@ public class LimitedQueue<T>
     }
     public int Count => queue.Count;
     public int Capacity => capacity;
+}
+
+
+public class InputAction 
+{
+    public Button button;
+    private float timestamp;
+    private float buffer;
+
+    public InputAction(Button button, float timestamp, float buffer) 
+    {
+        this.button = button;
+        this.timestamp = timestamp;
+        this.buffer = buffer;
+    } 
+
+    public bool Validate()
+    {
+        return timestamp + buffer >= Time.time;
+    }
 }

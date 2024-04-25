@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using UnityEngine;
 
+
+[RequireComponent(typeof(HeroActionController))]
+[RequireComponent(typeof(HeroMovementController))]
 public class HeroState : BaseState
 {
     [SerializeField] private int defaultMaxHP = 100;

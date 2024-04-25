@@ -18,10 +18,10 @@ GameObject:
   - component: {fileID: 661842929658866537}
   - component: {fileID: 5156581205356023008}
   - component: {fileID: 7771624282697274858}
-  - component: {fileID: 7038762598678058896}
   - component: {fileID: 58778892585113452}
   - component: {fileID: 8089443880607092118}
   - component: {fileID: 55518928982876584}
+  - component: {fileID: 6465345513779158342}
   m_Layer: 6
   m_Name: Monk
   m_TagString: Agent
@@ -129,7 +129,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.009611458, y: -0.07005716}
+  m_Offset: {x: -0.009611458, y: -0.07783979}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -140,7 +140,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.2718798, y: 0.45710057}
+  m_Size: {x: 0.2718798, y: 0.47266585}
   m_EdgeRadius: 0
 --- !u!50 &8241552404613318299
 Rigidbody2D:
@@ -231,7 +231,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1601792176009571056}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d12718d3ef9ca8fb8bd99d9051366384, type: 3}
   m_Name: 
@@ -258,32 +258,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &7038762598678058896
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1601792176009571056}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f67c7e722ba14acd9153bb4488bff6e4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SensorName: RayPerceptionSensor
-  m_DetectableTags: []
-  m_RaysPerDirection: 10
-  m_MaxRayDegrees: 70
-  m_SphereCastRadius: 5
-  m_RayLength: 80
-  m_RayLayerMask:
-    serializedVersion: 2
-    m_Bits: 4294967240
-  m_ObservationStacks: 1
-  m_AlternatingRayOrder: 0
-  m_UseBatchedRaycasts: 0
-  rayHitColor: {r: 1, g: 0, b: 0, a: 1}
-  rayMissColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &58778892585113452
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -330,8 +304,8 @@ MonoBehaviour:
   agentParameters:
     maxStep: 0
   hasUpgradedFromAgentParameters: 1
-  MaxStep: 1500
-  opponent: {fileID: 6986117717716457421, guid: 873b1a8119b81623c9fc8fe232789d29, type: 3}
+  MaxStep: 100
+  opponent: {fileID: 0}
   self: {fileID: 1601792176009571056}
 --- !u!114 &55518928982876584
 MonoBehaviour:
@@ -346,8 +320,29 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   DecisionPeriod: 5
-  DecisionStep: 0
+  DecisionStep: 4
   TakeActionsBetweenDecisions: 1
+--- !u!114 &6465345513779158342
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1601792176009571056}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 282f342c2ab144bf38be65d4d0c4e07d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Camera: {fileID: 0}
+  m_SensorName: MonkSensor
+  m_Width: 80
+  m_Height: 45
+  m_Grayscale: 1
+  m_ObservationType: 0
+  m_RuntimeCameraEnable: 0
+  m_ObservationStacks: 4
+  m_Compression: 1
 --- !u!1 &4617399148562619489
 GameObject:
   m_ObjectHideFlags: 0

@@ -63,7 +63,7 @@ public class HeroMovementController : BaseMovementController
         isGrounded = Physics2D.OverlapCollider(col, filter, results) > 0;
         body.velocity = new Vector2(direction.x * state.stats.MS * Time.fixedDeltaTime, body.velocity.y);
         velocity = body.velocity;
-        print($"{name}: {velocity}");
+        // print($"{name}: {velocity}");
         // print($"{name}: {isGrounded}");
         if(body.velocity.y < 0)
             body.gravityScale = _fallScale;
