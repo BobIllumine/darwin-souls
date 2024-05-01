@@ -1,123 +1,156 @@
-// using System.Collections;
-// using System.Collections.Generic;
-// using Google.Protobuf.Reflection;
-// using UnityEngine;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEditor.Rendering;
+using UnityEngine;
 
 // [RequireComponent(typeof(BossState))]
 // [RequireComponent(typeof(BossAnimResolver))]
 // [RequireComponent(typeof(BossActionController))]
-// public class BossMovementController : BaseMovementController
-// {
-//     private Rigidbody2D body;
-//     private float _startScale = 5;
-//     private float _fallScale = 8;
-//     private bool isDashing;
-    
-//     void Start() 
-//     {
-//         state = GetComponent<BossState>();
-//         animResolver = GetComponent<BossAnimResolver>();
-//         body = GetComponent<Rigidbody2D>();
-//         actionController = GetComponent<BossActionController>();
-//         isGrounded = true;
-//         isMovable = true;
-//         isDashing = false;
-//     }
-//     public override int[] isMoving()
-//     {
-//         throw new System.NotImplementedException();
-//     }
-//     public override void Stop()
-//     {
-//         throw new System.NotImplementedException();
-//     }
+public class BossMovementController : BaseMovementController
+{
+    private Rigidbody2D body;
+    private BoxCollider2D col;
+    private Collider2D[] results;
+    private ContactFilter2D filter;
+    private float _startScale = 5;
+    private float _fallScale = 8;
+    private bool isDashing;
+    // private BaseAgent agent;
 
-//     void Update() 
-//     {
-//         // if(Mathf.Abs(body.velocity.x) <= 1e-7f && isGrounded) 
-//         // {
-//         //     animResolver.AnimateIdle(ActionStatus.IDLE);
-//         //     actionController.canAttack = (state.status == Status.STUNNED || state.status == Status.DISARMED) ? false : true;
-//         // }
-//         // if(Mathf.Abs(body.velocity.x) > 1e-7f && isGrounded)
-//         // {
-//         //     animResolver.AnimateBool(ActionStatus.RUN, true);
-//         //     actionController.canAttack = false;
-//         // }
-//         // if(body.velocity.y > 1e-7f && !isGrounded)
-//         // {
-//         //     animResolver.AnimateBool(ActionStatus.JUMP, true);
-//         //     actionController.canAttack = false;
-//         // }
-//         // if(body.velocity.y < -1e-7f && !isGrounded) 
-//         // {
-//         //     animResolver.AnimateBool(ActionStatus.FALL, true);
-//         //     actionController.canAttack = false;
-//         // }
-//     }
-//     void FixedUpdate() 
-//     {
-//         if(isDashing || !isMovable)
-//             return;
-//         body.velocity = new Vector2(direction.x * state.MS * Time.fixedDeltaTime, body.velocity.y);
-//         if(body.velocity.y < 0)
-//             body.gravityScale = _fallScale;
-//     }
-//     public override void Jump() 
-//     {
-//         if(!isGrounded || !isMovable)
-//             return;
-//         body.gravityScale = _startScale;
-//         float jumpHeight = Mathf.Sqrt(state.MS) / 4;
-//         float jumpForce = Mathf.Sqrt(jumpHeight * (Physics2D.gravity.y * body.gravityScale) * -2) * body.mass;
-//         body.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
-//         isGrounded = false;
-//     }
+    void Start() 
+    {
+        state = GetComponent<BossState>();
+        animResolver = GetComponent<BossAnimResolver>();
+        col = GetComponent<BoxCollider2D>();
+        body = GetComponent<Rigidbody2D>();
+        // agent = GetComponent<BossAgent>();
+        actionController = GetComponent<BossActionController>();
+        results = new Collider2D[10];
+        filter = new ContactFilter2D();
+        filter.SetLayerMask(LayerMask.GetMask("Ground"));
+        filter.useLayerMask = true;
+        isGrounded = true;
+        isMovable = true;
+        isDashing = false;
+    }
 
-//     public override void Move(float dir)
-//     {
-//         direction = Vector2.right * dir;
-//         if(dir > 0)
-//             animResolver.ChangeFacedDirection(1);
-//         else if(dir < 0)
-//             animResolver.ChangeFacedDirection(-1);
-//     }
+    public override int[] isMoving() => new int[2] {(Mathf.Abs(body.velocity.x) > 1e-3f ? 1 : 0), (body.velocity.y < -1e-3f ? -1 : (body.velocity.y > 1e-3f ? 1 : 0))};
 
-//     public override void ApplyForce(Vector2 force, ForceMode2D mode)
-//     {
-//         body.AddForce(force, mode);
-//     }
+    void Update() 
+    {
+        if(Mathf.Abs(body.velocity.x) <= 1e-3f && isGrounded) 
+        {
+            animResolver.ChangeStatus(ActionStatus.IDLE);
+        }
+        else if(Mathf.Abs(body.velocity.x) > 1e-3f && isGrounded)
+        {
+            animResolver.ChangeStatus(ActionStatus.RUN);
+        }
+        if(body.velocity.y > 1e-3f && !isGrounded)
+        {
+            animResolver.ChangeStatus(ActionStatus.JUMP);
+        }
+        else if(body.velocity.y < -1e-3f && !isGrounded && animResolver.status != ActionStatus.ATTACK) 
+        {
+            animResolver.ChangeStatus(ActionStatus.FALL);
+        }
+    }
+    void FixedUpdate() 
+    {
+        if(isDashing || !isMovable)
+            return;
+        isGrounded = Physics2D.OverlapCollider(col, filter, results) > 0;
+        body.velocity = new Vector2(direction.x * state.stats.MS * Time.fixedDeltaTime, body.velocity.y);
+        velocity = body.velocity;
+        // print($"{name}: {velocity}");
+        // print($"{name}: {isGrounded}");
+        if(body.velocity.y < 0)
+            body.gravityScale = _fallScale;
+    }
+    public override void Teleport(Vector2 position)
+    {
+        // body.isKinematic = true;
+        var tmpVelocity = velocity;
+        body.velocity = Vector2.zero;
+        body.Sleep();
+        body.position = new Vector2(position.x, position.y);
+        // body.angularVelocity = 0f;
+        // body.position = position;
+        // body.isKinematic = false;
+        body.WakeUp();
+        body.velocity = tmpVelocity;
+        // print(isMovable);
+        // Stop();
+    }
+    public override void Stop()
+    {
+        body.velocity = Vector2.zero;
+        Stats newStats = state.stats;
+        newStats.status = Status.STUNNED;
+        state.ApplyChanges(newStats);
+    }
+    public override void Jump() 
+    {
+        isGrounded = Physics2D.OverlapCollider(col, filter, results) > 0;
+        if(!isGrounded || !isMovable)
+            return;
+        body.gravityScale = _startScale;
+        float jumpHeight = Mathf.Sqrt(state.stats.MS) / 4;
+        float jumpForce = Mathf.Sqrt(jumpHeight * (Physics2D.gravity.y * body.gravityScale) * -2) * body.mass;
+        body.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+    }
 
-//     public override IEnumerator ApplyVelocity(Vector2 velocity, float duration, float gravity = 0)
-//     {   
-//         isDashing = true;
+    public override void Move(float dir)
+    {
+        direction = Vector2.right * dir;
+        // body.velocity = new Vector2(direction.x * state.MS * Time.fixedDeltaTime, body.velocity.y);
+        if(dir > 0)
+            animResolver.ChangeFacedDirection(1);
+        else if(dir < 0)
+            animResolver.ChangeFacedDirection(-1);
+    }
+
+    public override void ApplyForce(Vector2 force, ForceMode2D mode)
+    {
+        body.AddForce(force, mode);
+    }
+
+    public override IEnumerator ApplyVelocity(Vector2 velocity, float duration, float gravity = 0)
+    {   
+        isDashing = true;
         
-//         var gravityScale = body.gravityScale;
+        var gravityScale = body.gravityScale;
         
-//         body.gravityScale = 0;
+        body.gravityScale = 0;
 
-//         body.velocity = new Vector2(velocity.x * Time.fixedDeltaTime, velocity.y * Time.fixedDeltaTime);
+        body.velocity = new Vector2(velocity.x * Time.fixedDeltaTime, velocity.y * Time.fixedDeltaTime);
 
-//         yield return new WaitForSeconds(duration);
+        yield return new WaitForSeconds(duration);
 
-//         body.gravityScale = gravityScale;
+        body.gravityScale = gravityScale;
         
-//         isDashing = false;
-//     }
+        isDashing = false;
+    }
 
-//     private void OnCollisionEnter2D(Collision2D other)
-//     {
-//         isGrounded = other.gameObject.layer == 3 || other.gameObject.layer == 7;
-//         if(other.gameObject.layer == 7) 
-//         {
-//             var x = body.velocity.x;
-//             var y = body.velocity.y;
-//             body.velocity = Vector2.zero;
-//         }
-            
-//     }
-//     private void OnCollisionExit2D(Collision2D other)
-//     {
-//         isGrounded = !(other.gameObject.layer == 3 || other.gameObject.layer == 7);
-//     }
-// }
+
+    private void OnCollisionEnter2D(Collision2D other)
+    {
+        isGrounded = other.gameObject.layer == 3;
+        // if(other.gameObject.layer == 7) 
+        // {
+        //     isGrounded = false;
+        //     animResolver.ChangeStatus(ActionStatus.HURT);
+        //     agent.AddReward(-0.1f);
+        // }
+    }
+    private void OnCollisionExit2D(Collision2D other)
+    {
+        isGrounded = !(other.gameObject.layer == 3);
+        // if(other.gameObject.layer == 7)
+        // {
+        //     state.ApplyChange("status", Status.OK);
+        //     agent.AddReward(0.1f);
+        // }
+    }
+}

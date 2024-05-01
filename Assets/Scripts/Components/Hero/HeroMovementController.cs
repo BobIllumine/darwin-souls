@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using UnityEditor.Rendering;
 using UnityEngine;
 
-[RequireComponent(typeof(HeroState))]
-[RequireComponent(typeof(HeroAnimResolver))]
-[RequireComponent(typeof(HeroActionController))]
+// [RequireComponent(typeof(HeroState))]
+// [RequireComponent(typeof(HeroAnimResolver))]
+// [RequireComponent(typeof(HeroActionController))]
 public class HeroMovementController : BaseMovementController
 {
     private Rigidbody2D body;
@@ -51,7 +51,7 @@ public class HeroMovementController : BaseMovementController
         {
             animResolver.ChangeStatus(ActionStatus.JUMP);
         }
-        else if(body.velocity.y < -1e-3f && !isGrounded) 
+        else if(body.velocity.y < -1e-3f && !isGrounded && animResolver.status != ActionStatus.ATTACK) 
         {
             animResolver.ChangeStatus(ActionStatus.FALL);
         }
@@ -70,7 +70,18 @@ public class HeroMovementController : BaseMovementController
     }
     public override void Teleport(Vector2 position)
     {
-        transform.position = position;
+        // body.isKinematic = true;
+        var tmpVelocity = velocity;
+        body.velocity = Vector2.zero;
+        body.Sleep();
+        body.position = new Vector2(position.x, position.y);
+        // body.angularVelocity = 0f;
+        // body.position = position;
+        // body.isKinematic = false;
+        body.WakeUp();
+        body.velocity = tmpVelocity;
+        // print(isMovable);
+        // Stop();
     }
     public override void Stop()
     {

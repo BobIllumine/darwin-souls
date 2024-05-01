@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
-[RequireComponent(typeof(HeroState))]
-[RequireComponent(typeof(HeroAnimResolver))]
-[RequireComponent(typeof(HeroMovementController))]
+// [RequireComponent(typeof(HeroState))]
+// [RequireComponent(typeof(HeroAnimResolver))]
+// [RequireComponent(typeof(HeroMovementController))]
 public class HeroActionController : BaseActionController
 {
     void Awake()
@@ -23,7 +23,7 @@ public class HeroActionController : BaseActionController
     }
     public override void Do(string name)
     {
-        if(!isActionable || (!canCast && name != "defaultAttack") || (!canAttack && name == "defaultAttack") || !movementController.isGrounded)
+        if(!isActionable || (!canCast && name != "defaultAttack") || (!canAttack && name == "defaultAttack"))
             return;
         try
         {

@@ -4,8 +4,8 @@ using System.ComponentModel;
 using UnityEngine;
 
 
-[RequireComponent(typeof(HeroActionController))]
-[RequireComponent(typeof(HeroMovementController))]
+// [RequireComponent(typeof(HeroActionController))]
+// [RequireComponent(typeof(HeroMovementController))]
 public class HeroState : BaseState
 {
     [SerializeField] private int defaultMaxHP = 100;
@@ -19,7 +19,7 @@ public class HeroState : BaseState
     public override void ApplyChanges(Stats other)
     {
         lastImpact = (stats, other);
-        stats = other;
+        stats = new Stats(other);
     }
 
     public override (Stats, Stats) GetLastImpact()
@@ -37,6 +37,8 @@ public class HeroState : BaseState
     public override void Update()
     {
         base.Update();
+        // stats.HP = stats.HP - 1;
+        // print(stats.HP);
         animResolver.ChangeFloat("attackSpeed", stats.AS);
     }
 
@@ -45,8 +47,9 @@ public class HeroState : BaseState
         base.OnDeath();
         if(stats.HP <= 0)
         {
+            // print("ye im dead mate");
             // Destroy(gameObject);
-            agent.AddReward(-100f);
+            agent.AddReward(-stats.MaxHP * 3);
             agent.EndEpisode(); 
         }
     }
@@ -60,13 +63,14 @@ public class HeroState : BaseState
         movementController = GetComponent<HeroMovementController>();
         actionController = GetComponent<HeroActionController>();
         animResolver = GetComponent<HeroAnimResolver>();
-        stats.MaxHP = defaultMaxHP;
-        stats.HP = defaultHP;
-        stats.AD = defaultAD;
-        stats.MS = defaultMS;
-        stats.AS = defaultAS;
-        stats.CR = defaultCR;
-        stats.status = defaultStatus;
+        // stats.MaxHP = defaultMaxHP;
+        // stats.HP = defaultHP;
+        // stats.AD = defaultAD;
+        // stats.MS = defaultMS;
+        // stats.AS = defaultAS;
+        // stats.CR = defaultCR;
+        // stats.status = defaultStatus;
+        // print(stats.MS);
         lastImpact = (null, stats);
     }
 }

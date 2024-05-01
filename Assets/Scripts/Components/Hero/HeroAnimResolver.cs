@@ -21,10 +21,17 @@ public class HeroAnimResolver : BaseAnimResolver
         base.ChangeStatus(newStatus);
         try
         {
+            if(newStatus == ActionStatus.DIE)
+                print("try #1");
             AnimateBool(Mappings.Bools[status], true);
         } catch(KeyNotFoundException)
         {
+            if(newStatus == ActionStatus.DIE)
+                print("try #2");
             AnimateTrigger(Mappings.Triggers[status]);
+        } finally {
+            // if(newStatus == ActionStatus.IDLE)
+                // print("wtf");
         }
     }
     public override void AnimateTrigger(string param)
@@ -44,6 +51,7 @@ public class HeroAnimResolver : BaseAnimResolver
     {
         foreach(AnimatorControllerParameter parameter in animator.parameters) 
         {
+            // print(parameter.name);
             if(parameter.type == AnimatorControllerParameterType.Bool)
                 animator.SetBool(parameter.name, false);            
         }

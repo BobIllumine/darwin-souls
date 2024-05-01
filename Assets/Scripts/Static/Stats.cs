@@ -3,6 +3,26 @@ using System.Collections.Generic;
 
 public class Stats 
 {
+    public Stats()
+    {
+        this._curHP =(int)Mappings.DefaultStats["curHP"];
+        this._maxHP = (int)Mappings.DefaultStats["maxHP"];
+        this.AD = (int)Mappings.DefaultStats["AD"];
+        this.AS = (float)Mappings.DefaultStats["AS"];
+        this.CR = (float)Mappings.DefaultStats["CR"];
+        this.MS = (float)Mappings.DefaultStats["MS"];
+        this.status = (Status)Mappings.DefaultStats["status"];
+    }
+    public Stats(Stats other) 
+    {
+        this._curHP = other._curHP;
+        this._maxHP = other._maxHP;
+        this.AD = other.AD;
+        this.AS = other.AS;
+        this.CR = other.CR;
+        this.MS = other.MS;
+        this.status = other.status;
+    }
     private int _curHP, _maxHP; 
     public int HP 
     { 

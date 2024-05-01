@@ -5,8 +5,8 @@ using Unity.Sentis.Layers;
 using UnityEngine;
 using UnityEngine.Analytics;
 
-[RequireComponent(typeof(HeroMovementController))]
-[RequireComponent(typeof(HeroActionController))]
+// [RequireComponent(typeof(HeroMovementController))]
+// [RequireComponent(typeof(HeroActionController))]
 public class HeroInput : BaseInput
 {
     void Start()
@@ -14,7 +14,7 @@ public class HeroInput : BaseInput
         actionController = GetComponent<HeroActionController>();
         movementController = GetComponent<HeroMovementController>();
         queue = new LimitedQueue<InputAction>(20);
-        buffer = Time.fixedDeltaTime * 20;
+        buffer = Time.fixedDeltaTime * 30;
         if(player == Player.P1)
         {
             buttons = Mappings.DefaultInputMapP1;

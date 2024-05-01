@@ -47,7 +47,8 @@ public class DefaultAttack : Action, IEffect, ITarget, IStateDependent, IMobilit
     public override void Fire(float cr)
     {
         this.cr = cr;
-        movementController.Stop();
+        if (movementController.isGrounded)
+            movementController.Stop();
         animResolver.ChangeStatus(status);
     }
     public override void UseOnState(BaseState state, float cr)

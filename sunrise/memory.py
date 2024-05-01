@@ -64,13 +64,13 @@ class SegmentTree():
 
 class ReplayMemory():
     def __init__(self, args, capacity, beta_mean, num_ensemble):
-        self.device = args.device
+        self.device = args['device']
         self.capacity = capacity
-        self.history = args.history_length
-        self.discount = args.discount
-        self.n = args.multi_step
-        self.priority_weight = args.priority_weight  # Initial importance sampling weight β, annealed to 1 over course of training
-        self.priority_exponent = args.priority_exponent
+        self.history = args['history_length']
+        self.discount = args['discount']
+        self.n = args['multi_step']
+        self.priority_weight = args['priority_weight']  # Initial importance sampling weight β, annealed to 1 over course of training
+        self.priority_exponent = args['priority_exponent']
         self.beta_mean = beta_mean
         self.num_ensemble = num_ensemble
         self.t = 0  # Internal episode timestep counter
@@ -78,7 +78,8 @@ class ReplayMemory():
 
     # Adds state and action at time t, reward and terminal at time t + 1
     def append(self, state, action, reward, terminal):
-        state = state[-1].mul(255).to(dtype=torch.uint8, device=torch.device('cpu'))  # Only store last frame and discretise to save memory
+        # Only store last frame and discretise to save memory
+        state = state[0].mul(255).to(dtype=torch.uint8, device=torch.device('cpu'))
         mask = torch.bernoulli(torch.Tensor([self.beta_mean]*self.num_ensemble))
         self.transitions.append(Transition(self.t, state, action, reward, not terminal, mask), self.transitions.max)  # Store new transition with maximum priority
         self.t = 0 if terminal else self.t + 1  # Start new episodes with t = 0

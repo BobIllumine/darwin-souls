@@ -6,6 +6,15 @@ using UnityEngine;
 
 public static class Mappings
 {
+    public static Dictionary<string, object> DefaultStats = new Dictionary<string, object>() {
+        ["maxHP"] = 100,
+        ["curHP"] = 100,
+        ["AD"] = 10,
+        ["MS"] = 800f,
+        ["CR"] = 0f,
+        ["AS"] = 1f,
+        ["status"] = Status.OK,
+    };
     public static Dictionary<ActionStatus, string> ActionStates = new Dictionary<ActionStatus, string>() {
         [ActionStatus.ATTACK] = "Attack",
         [ActionStatus.RUN] = "Run",
@@ -38,7 +47,7 @@ public static class Mappings
         [Button.SKILL_2] = KeyCode.J,
         [Button.SKILL_3] = KeyCode.L,
         [Button.SKILL_4] = KeyCode.O,
-        [Button.JUMP] = KeyCode.F
+        [Button.JUMP] = KeyCode.Space
     };
     public static Dictionary<Button, KeyCode> DefaultInputMapP2 = new Dictionary<Button, KeyCode>() {
         [Button.DEFAULT_ATTACK] = KeyCode.Keypad5,
