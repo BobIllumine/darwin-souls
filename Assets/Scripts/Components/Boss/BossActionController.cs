@@ -28,7 +28,7 @@ public class BossActionController : BaseActionController
         try
         {
             activeAction = actionSpace[name];
-            Stats newStats = state.stats;
+            Stats newStats = new Stats(state.stats);
             newStats.status = Status.STUNNED;
             state.ApplyChanges(newStats);
             activeAction.Fire(state.stats.CR);
@@ -36,7 +36,7 @@ public class BossActionController : BaseActionController
         catch(KeyNotFoundException e)
         {
             print(e);
-            Stats newStats = state.stats;
+            Stats newStats = new Stats(state.stats);
             newStats.status = Status.OK;
             state.ApplyChanges(newStats);
             // Debug.Log("bad luck kiddo");

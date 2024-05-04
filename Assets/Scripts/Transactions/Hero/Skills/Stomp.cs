@@ -4,9 +4,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
-public class Stomp : Action, IMobility, IStateDependent
+public class Stomp : Action, IMobility
 {
-    public BaseState state { get; protected set; }
     public BaseMovementController movementController { get; protected set; }
     // Action
     public override void Fire(float cr)
@@ -16,7 +15,7 @@ public class Stomp : Action, IMobility, IStateDependent
             
         PropertyInfo ms = state.GetType().GetProperty("MS");
 
-        Stats newStats = state.stats;
+        Stats newStats = new Stats(state.stats);
         newStats.MS *= 10;
         state.ApplyChanges(newStats);
 

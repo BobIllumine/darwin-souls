@@ -14,7 +14,7 @@ public class HeroInput : BaseInput
         actionController = GetComponent<HeroActionController>();
         movementController = GetComponent<HeroMovementController>();
         queue = new LimitedQueue<InputAction>(20);
-        buffer = Time.fixedDeltaTime * 30;
+        buffer = Time.fixedDeltaTime * 10;
         if(player == Player.P1)
         {
             buttons = Mappings.DefaultInputMapP1;
@@ -26,29 +26,43 @@ public class HeroInput : BaseInput
             axis = "Horizontal_P2";
         }
         skillList = new List<string>();
+
+        AddSkill("blink", gameObject.AddComponent<Blink>().Initialize(gameObject));
+        AddSkill("dash", gameObject.AddComponent<Dash>().Initialize(gameObject));
+        AddSkill("poisonCloud", gameObject.AddComponent<PoisonCloud>().Initialize(gameObject));
+
+
     }
-    public override void AddAction(Button button)
+    public override void AddAction(Button button = Button.NO_ACTION)
     {
         queue.Enqueue(new InputAction(button, Time.time, buffer));
     }
     void Update()
     {
+        // AddAction(Button.JUMP);
         // buffer.Enqueue(Button.JUMP);
-        if(Input.GetKeyDown(buttons[Button.JUMP]))
-            // AddAction(Button.JUMP);
-            movementController.Jump();
+        // var ax = Input.GetAxis(axis);
+        if(Input.GetKeyDown((KeyCode)buttons[Button.JUMP]))
+            AddAction(Button.JUMP);
+            // movementController.Jump();
         
-        if(Input.GetKeyDown(buttons[Button.DEFAULT_ATTACK]))
-            // AddAction(Button.DEFAULT_ATTACK);
-            actionController.Do("defaultAttack");
+        else if(Input.GetKeyDown((KeyCode)buttons[Button.DEFAULT_ATTACK]))
+            AddAction(Button.DEFAULT_ATTACK);
+            // actionController.Do("defaultAttack");
 
-        // if(Input.GetKeyDown(buttons[Button.SKILL_1]))
-        //     actionController.Do(skillList[0]);
+        else if(Input.GetKeyDown((KeyCode)buttons[Button.SKILL_1]))
+            AddAction(Button.SKILL_1);
+            // actionController.Do(skillList[0]);
         
-        // if(Input.GetKeyDown(buttons[Button.SKILL_2]))
-        //     actionController.Do(skillList[1]);
-        
+        else if(Input.GetKeyDown((KeyCode)buttons[Button.SKILL_2]))
+            AddAction(Button.SKILL_2);
+        //     actionController.Do(skillList[1])
+        else if(Input.GetKeyDown((KeyCode)buttons[Button.SKILL_3]))
+            AddAction(Button.SKILL_3);
+        // else
+            // AddAction(Button.NO_ACTION, ax);
         movementController.Move(Input.GetAxis(axis));
+        // AddAxis(Input.GetAxis(axis));
     }
     void FixedUpdate()
     {
@@ -59,6 +73,8 @@ public class HeroInput : BaseInput
                 return;
             if(lastAction.Validate())
             {
+                // if(lastAction.axis != 0f)
+                    // movementController.Move(lastAction.axis);
                 switch(lastAction.button)
                 {
                     case Button.JUMP:
@@ -67,14 +83,21 @@ public class HeroInput : BaseInput
                     case Button.DEFAULT_ATTACK:
                         actionController.Do("defaultAttack");
                         break;
+                    case Button.SKILL_1:
+                        actionController.Do(skillList[0]);
+                        break;
+                    case Button.SKILL_2:
+                        actionController.Do(skillList[1]);
+                        break;
+                    case Button.SKILL_3:
+                        actionController.Do(skillList[2]);
+                        break;
                     default:
                         break;
                 }
                 break;
             }
         }
-        
-
         // print($"{name}: {lastAction}, {buffer.Count}");
     }
     public void AddSkill(string name, Action action) 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -18,7 +19,7 @@ public class HeroState : BaseState
 
     public override void ApplyChanges(Stats other)
     {
-        lastImpact = (stats, other);
+        lastImpact = (new Stats(stats), new Stats(other));
         stats = new Stats(other);
     }
 
@@ -32,6 +33,11 @@ public class HeroState : BaseState
         Stats copy = stats;
         ApplyChanges(other);
         StartCoroutine(TimedRevert(copy, duration));
+    }
+
+    public override void ApplyPeriodicChanges(Func<BaseState, Stats> statChange, float duration, float period)
+    {
+        StartCoroutine(PeriodicApply(statChange, duration, period));
     }
 
     public override void Update()
@@ -63,6 +69,7 @@ public class HeroState : BaseState
         movementController = GetComponent<HeroMovementController>();
         actionController = GetComponent<HeroActionController>();
         animResolver = GetComponent<HeroAnimResolver>();
+        busy = false;
         // stats.MaxHP = defaultMaxHP;
         // stats.HP = defaultHP;
         // stats.AD = defaultAD;

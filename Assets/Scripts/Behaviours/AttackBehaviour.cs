@@ -18,6 +18,7 @@ public class AttackBehaviour : StateMachineBehaviour
         animResolver = actor.GetComponent<BaseAnimResolver>();
         actionController = actor.GetComponent<BaseActionController>();
         movementController = actor.GetComponent<BaseMovementController>();
+        state.busy = true;
         // state.ApplyChange("status", Status.STUNNED);
     }
 
@@ -32,9 +33,7 @@ public class AttackBehaviour : StateMachineBehaviour
     // OnStateExit is called when a transition ends and the state machine finishes evaluating this state
     override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
-        Stats newStats = state.stats;
-        newStats.status = Status.OK;
-        state.ApplyChanges(newStats);
+        state.busy = false;
         // state.ApplyChange("status", Status.OK);
     }
 }

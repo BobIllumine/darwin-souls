@@ -4,11 +4,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
-public class VampireSlash : Action, IEffect, ITarget, IStateDependent, IBuff
+public class VampireSlash : Action, IEffect, ITarget, IBuff
 {
-    public BaseState state { get; protected set; }
-    protected Dictionary<string, Func<object, object>> _statChangeMapping;
-    protected Dictionary<string, Func<object, object>> _selfStatChangeMapping;
     // IEffect
     public int maxHP_d { get; protected set; }
     public float maxHP_mult { get; protected set; }
@@ -25,7 +22,7 @@ public class VampireSlash : Action, IEffect, ITarget, IStateDependent, IBuff
     public Status? newStatus { get; protected set; }
     public Stats GetModifiedStats(BaseState state)
     {
-        Stats newStats = state.stats;
+        Stats newStats = new Stats(state.stats);
 
         newStats.MaxHP = (int)(maxHP_mult * newStats.MaxHP + maxHP_d);
         newStats.HP = (int)(curHP_mult * newStats.HP + curHP_d);
@@ -57,7 +54,7 @@ public class VampireSlash : Action, IEffect, ITarget, IStateDependent, IBuff
     public Status? self_newStatus { get; protected set; }
     public virtual Stats GetSelfModifiedStats(BaseState state)
     {
-        Stats newStats = state.stats;
+        Stats newStats = new Stats(state.stats);
 
         newStats.MaxHP = (int)(self_maxHP_mult * newStats.MaxHP + self_maxHP_d);
         newStats.HP = (int)(self_curHP_mult * newStats.HP + self_curHP_d);

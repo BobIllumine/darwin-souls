@@ -31,6 +31,7 @@ public class BossInput : BaseInput
     {
         queue.Enqueue(new InputAction(button, Time.time, buffer));
     }
+
     void Update()
     {
         // buffer.Enqueue(Button.JUMP);

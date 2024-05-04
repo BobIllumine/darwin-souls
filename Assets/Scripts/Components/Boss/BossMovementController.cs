@@ -86,7 +86,7 @@ public class BossMovementController : BaseMovementController
     public override void Stop()
     {
         body.velocity = Vector2.zero;
-        Stats newStats = state.stats;
+        Stats newStats = new Stats(state.stats);
         newStats.status = Status.STUNNED;
         state.ApplyChanges(newStats);
     }

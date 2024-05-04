@@ -4,9 +4,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
-public class Heal : Action, IStateDependent, IBuff
+public class Heal : Action, IBuff
 {
-    public BaseState state { get; protected set; }
     // IBuff
     public int self_maxHP_d { get; protected set; }
     public float self_maxHP_mult { get; protected set; }
@@ -23,7 +22,7 @@ public class Heal : Action, IStateDependent, IBuff
     public Status? self_newStatus { get; protected set; }
     public virtual Stats GetSelfModifiedStats(BaseState state)
     {
-        Stats newStats = state.stats;
+        Stats newStats = new Stats(state.stats);
 
         newStats.MaxHP = (int)(self_maxHP_mult * newStats.MaxHP + self_maxHP_d);
         newStats.HP = (int)(self_curHP_mult * newStats.HP + self_curHP_d);

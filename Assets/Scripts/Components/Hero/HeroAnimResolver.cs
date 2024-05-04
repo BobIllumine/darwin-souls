@@ -7,12 +7,10 @@ using UnityEngine.Animations;
 public class HeroAnimResolver : BaseAnimResolver
 {
     private Animator animator;
-    private HeroMovementController movementController;
     void Start()
     {
         status = ActionStatus.IDLE;
         animator = GetComponent<Animator>();
-        movementController = GetComponent<HeroMovementController>();
         faceTowards = 1;
     }
     
@@ -21,13 +19,13 @@ public class HeroAnimResolver : BaseAnimResolver
         base.ChangeStatus(newStatus);
         try
         {
-            if(newStatus == ActionStatus.DIE)
-                print("try #1");
+            // if(newStatus == ActionStatus.DIE)
+            //     print("try #1");
             AnimateBool(Mappings.Bools[status], true);
         } catch(KeyNotFoundException)
         {
-            if(newStatus == ActionStatus.DIE)
-                print("try #2");
+            // if(newStatus == ActionStatus.DIE)
+            //     print("try #2");
             AnimateTrigger(Mappings.Triggers[status]);
         } finally {
             // if(newStatus == ActionStatus.IDLE)

@@ -58,12 +58,14 @@ public class LimitedQueue<T>
 
 public class InputAction 
 {
+    public float axis;
     public Button button;
     private float timestamp;
     private float buffer;
 
-    public InputAction(Button button, float timestamp, float buffer) 
+    public InputAction(Button button, float timestamp, float buffer, float axis = 0) 
     {
+        this.axis = axis;
         this.button = button;
         this.timestamp = timestamp;
         this.buffer = buffer;

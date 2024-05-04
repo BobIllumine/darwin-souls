@@ -37,25 +37,30 @@ public static class Mappings
         [ActionStatus.DIE] = "death",
     };
 
+    public static Dictionary<ProjectileStatus, string> ProjectileBools = new Dictionary<ProjectileStatus, string>() {
+        [ProjectileStatus.MOVE] = "idle",
+    };
     public static Dictionary<ProjectileStatus, string> ProjectileTriggers = new Dictionary<ProjectileStatus, string>() {
         [ProjectileStatus.CAST] = "cast",
         [ProjectileStatus.HIT] = "hit"
     };
-    public static Dictionary<Button, KeyCode> DefaultInputMapP1 = new Dictionary<Button, KeyCode>() {
+    public static Dictionary<Button, KeyCode?> DefaultInputMapP1 = new Dictionary<Button, KeyCode?>() {
         [Button.DEFAULT_ATTACK] = KeyCode.K,
         [Button.SKILL_1] = KeyCode.I,
         [Button.SKILL_2] = KeyCode.J,
         [Button.SKILL_3] = KeyCode.L,
         [Button.SKILL_4] = KeyCode.O,
-        [Button.JUMP] = KeyCode.Space
+        [Button.JUMP] = KeyCode.Space,
+        [Button.NO_ACTION] = null,
     };
-    public static Dictionary<Button, KeyCode> DefaultInputMapP2 = new Dictionary<Button, KeyCode>() {
+    public static Dictionary<Button, KeyCode?> DefaultInputMapP2 = new Dictionary<Button, KeyCode?>() {
         [Button.DEFAULT_ATTACK] = KeyCode.Keypad5,
         [Button.SKILL_1] = KeyCode.Keypad4,
         [Button.SKILL_2] = KeyCode.Keypad8,
         [Button.SKILL_3] = KeyCode.Keypad6,
         [Button.SKILL_4] = KeyCode.Keypad2,
-        [Button.JUMP] = KeyCode.Keypad0
+        [Button.JUMP] = KeyCode.Keypad0,
+        [Button.NO_ACTION] = null,
     };
 
     public static Dictionary<string, Type> SkillMap = new Dictionary<string, Type>() {
@@ -64,6 +69,7 @@ public static class Mappings
         ["Heal"] = typeof(Heal),
         ["VampireSlash"] = typeof(VampireSlash),
         ["Fireball"] = typeof(Fireball),
-        ["Stomp"] = typeof(Stomp)
+        ["Stomp"] = typeof(Stomp),
+        ["Blink"] = typeof(Blink)
     };
 }

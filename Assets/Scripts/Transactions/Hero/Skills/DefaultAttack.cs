@@ -4,10 +4,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
-public class DefaultAttack : Action, IEffect, ITarget, IStateDependent, IMobility, IReward
+public class DefaultAttack : Action, IEffect, ITarget, IMobility, IReward
 {
-    public BaseState state { get; protected set; }
-    protected Dictionary<string, Func<object, object>> _statChangeMapping;
     // IReward
     public BaseAgent agent { get; protected set; }
     public float reward { get; protected set; }
@@ -27,7 +25,7 @@ public class DefaultAttack : Action, IEffect, ITarget, IStateDependent, IMobilit
     public Status? newStatus { get; protected set; }
     public Stats GetModifiedStats(BaseState state)
     {
-        Stats newStats = state.stats;
+        Stats newStats = new Stats(state.stats);
 
         newStats.MaxHP = (int)(maxHP_mult * newStats.MaxHP + maxHP_d);
         newStats.HP = (int)(curHP_mult * newStats.HP + curHP_d);

@@ -10,13 +10,13 @@ public class FireballProjectile : BaseProjectile
     {
         body = GetComponent<Rigidbody2D>();
         animResolver = GetComponent<ProjectileAnimResolver>();
-        animResolver.AnimateTrigger(ProjectileStatus.CAST);
+        animResolver.ChangeStatus(ProjectileStatus.CAST);
     }
     void FixedUpdate() {
         body.velocity = velocity;    
     }
     void OnCollisionEnter2D(Collision2D other) {
-        animResolver.AnimateTrigger(ProjectileStatus.HIT);
+        animResolver.ChangeStatus(ProjectileStatus.HIT);
         if((transform.parent.gameObject.CompareTag("Player") && other.gameObject.CompareTag("Enemy")) 
         || transform.parent.gameObject.CompareTag("Enemy") && other.gameObject.CompareTag("Player")) {
             SendMessageUpwards("OnHit", other);

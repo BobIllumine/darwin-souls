@@ -7,7 +7,7 @@ from plotly.graph_objs.scatter import Line
 import torch
 import numpy as np
 
-from env import Env
+# from env import Env
 
 # Test DQN
 def test(args, T, dqn, val_mem, metrics, results_dir, evaluate=False):

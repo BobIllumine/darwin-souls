@@ -8,8 +8,8 @@ public class Deadzone : MonoBehaviour
         if(other.gameObject.GetComponent<BaseState>() != null)
         {
             var state = other.gameObject.GetComponent<BaseState>();
-            // print(other.name);
-            Stats newStats = state.stats;
+            print(other.name);
+            Stats newStats = new Stats(state.stats);
             newStats.HP = 0;
             state.ApplyChanges(newStats);
         }   

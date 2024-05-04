@@ -7,12 +7,11 @@ using Unity.VisualScripting;
 using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine;
 
-public class Fireball : Action, IEffect, IProjectile, ITarget, IStateDependent, ITransient
+public class Fireball : Action, IEffect, IProjectile, ITarget, ITransient
 {
     // ITransient
     public float duration { get; protected set; }
     // IStateDependent
-    public BaseState state { get; protected set; }
     // IEffect
     public int maxHP_d { get; protected set; }
     public float maxHP_mult { get; protected set; }
@@ -39,7 +38,7 @@ public class Fireball : Action, IEffect, IProjectile, ITarget, IStateDependent, 
             
         // }
         // return stats;
-        Stats newStats = state.stats;
+        Stats newStats = new Stats(state.stats);
 
         newStats.MaxHP = (int)(maxHP_mult * newStats.MaxHP + maxHP_d);
         newStats.HP = (int)(curHP_mult * newStats.HP + curHP_d);
@@ -68,12 +67,16 @@ public class Fireball : Action, IEffect, IProjectile, ITarget, IStateDependent, 
     public override void Fire(float cr)
     {
         if(!isAvailable)
+        {
+            state.busy = false;
             return;
+        }
         this.cr = cr;
         GameObject fireball = Instantiate(projectile, new Vector2(transform.position.x + 1, transform.position.y), Quaternion.Euler(0, 0, -90));
         fireball.transform.SetParent(transform);
         FireballProjectile fball_proj = fireball.GetComponent<FireballProjectile>();
         fball_proj.Initialize(Vector2.right * animResolver.faceTowards, Vector2.right * animResolver.faceTowards * 1000 * Time.fixedDeltaTime);
+        state.busy = false;
         StartCoroutine(StartCooldown(cr));
     }
     public override void UseOnState(BaseState state, float cr)

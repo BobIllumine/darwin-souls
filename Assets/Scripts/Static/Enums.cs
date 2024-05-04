@@ -7,7 +7,8 @@ public enum Status {
     STUNNED,
     ENSNARED,
     MUTE,
-    DISARMED
+    DISARMED,
+    IN_ACTION,
 }
 
 public enum ActionStatus {
@@ -44,5 +45,6 @@ public enum Button {
     SKILL_1,
     SKILL_2,
     SKILL_3,
-    SKILL_4
+    SKILL_4,
+    NO_ACTION
 }

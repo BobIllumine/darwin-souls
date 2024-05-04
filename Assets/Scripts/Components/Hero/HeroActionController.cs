@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 // [RequireComponent(typeof(HeroState))]
 // [RequireComponent(typeof(HeroAnimResolver))]
@@ -23,22 +24,22 @@ public class HeroActionController : BaseActionController
     }
     public override void Do(string name)
     {
+        foreach(KeyValuePair<string, Action> pair in actionSpace)
+        {
+            pair.Value.Serialize();
+        }
         if(!isActionable || (!canCast && name != "defaultAttack") || (!canAttack && name == "defaultAttack"))
             return;
         try
         {
             activeAction = actionSpace[name];
-            Stats newStats = state.stats;
-            newStats.status = Status.STUNNED;
-            state.ApplyChanges(newStats);
+            state.busy = true;
             activeAction.Fire(state.stats.CR);
         }
         catch(KeyNotFoundException e)
         {
             print(e);
-            Stats newStats = state.stats;
-            newStats.status = Status.OK;
-            state.ApplyChanges(newStats);
+            state.busy = false;
             // Debug.Log("bad luck kiddo");
             return;    
         }

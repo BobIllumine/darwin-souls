@@ -28,6 +28,7 @@ public interface ITransient
 
 public interface IPeriodic 
 {
+    public float perDuration { get; }
     public float period { get; }
 }
 

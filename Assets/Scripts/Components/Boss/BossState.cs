@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -15,6 +16,11 @@ public class BossState : BaseState
     [SerializeField] private float defaultAS = 1.0f;
     [SerializeField] private float defaultCR = 0.0f;
     [SerializeField] private Status defaultStatus = Status.OK;
+
+    public override void ApplyPeriodicChanges(Func<BaseState, Stats> statChange, float duration, float period)
+    {
+        StartCoroutine(PeriodicApply(statChange, duration, period));
+    }
 
     public override void ApplyChanges(Stats other)
     {
@@ -36,6 +42,7 @@ public class BossState : BaseState
 
     public override void Update()
     {
+        print(stats.HP);
         base.Update();
         animResolver.ChangeFloat("attackSpeed", stats.AS);
     }

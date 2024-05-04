@@ -86,9 +86,9 @@ public class HeroMovementController : BaseMovementController
     public override void Stop()
     {
         body.velocity = Vector2.zero;
-        Stats newStats = state.stats;
-        newStats.status = Status.STUNNED;
-        state.ApplyChanges(newStats);
+        // Stats newStats = new Stats(state.stats);
+        // newStats.status = Status.STUNNED;
+        // state.ApplyChanges(newStats);
     }
     public override void Jump() 
     {
