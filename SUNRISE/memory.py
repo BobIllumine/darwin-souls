@@ -5,7 +5,7 @@ import numpy as np
 import torch
 
 Transition = namedtuple('Transition', ('timestep', 'state', 'action', 'reward', 'nonterminal', 'mask'))
-blank_trans = Transition(0, torch.zeros(80, 45, dtype=torch.uint8), None, 0, False, torch.zeros(5, dtype=torch.float32))
+blank_trans = Transition(0, torch.zeros(45, 80, dtype=torch.uint8), None, 0, False, torch.zeros(5, dtype=torch.float32))
 
 #mask = torch.bernoulli(torch.Tensor([ber_mean]*num_ensemble))
 # Segment tree data structure where parent node values are sum/max of children node values
@@ -64,13 +64,13 @@ class SegmentTree():
 
 class ReplayMemory():
     def __init__(self, args, capacity, beta_mean, num_ensemble):
-        self.device = args.device
+        self.device = args['device']
         self.capacity = capacity
-        self.history = args.history_length
-        self.discount = args.discount
-        self.n = args.multi_step
-        self.priority_weight = args.priority_weight  # Initial importance sampling weight β, annealed to 1 over course of training
-        self.priority_exponent = args.priority_exponent
+        self.history = args['history_length']
+        self.discount = args['discount']
+        self.n = args['multi_step']
+        self.priority_weight = args['priority_weight']  # Initial importance sampling weight β, annealed to 1 over course of training
+        self.priority_exponent = args['priority_exponent']
         self.beta_mean = beta_mean
         self.num_ensemble = num_ensemble
         self.t = 0  # Internal episode timestep counter
@@ -133,6 +133,7 @@ class ReplayMemory():
         states, next_states, = torch.stack(states), torch.stack(next_states)
         actions, returns, nonterminals = torch.cat(actions), torch.cat(returns), torch.stack(nonterminals)
         probs = np.array(probs, dtype=np.float32) / p_total  # Calculate normalised probabilities
+        print(probs)
         capacity = self.capacity if self.transitions.full else self.transitions.index
         weights = (capacity * probs) ** -self.priority_weight  # Compute importance-sampling weights w
         weights = torch.tensor(weights / weights.max(), dtype=torch.float32, device=self.device)  # Normalise by max importance-sampling weight from batch

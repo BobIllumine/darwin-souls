@@ -29,7 +29,7 @@ public class HeroInput : BaseInput
 
         AddSkill("blink", gameObject.AddComponent<Blink>().Initialize(gameObject));
         AddSkill("dash", gameObject.AddComponent<Dash>().Initialize(gameObject));
-        AddSkill("poisonCloud", gameObject.AddComponent<PoisonCloud>().Initialize(gameObject));
+        AddSkill("sonicWave", gameObject.AddComponent<SonicWave>().Initialize(gameObject));
 
 
     }

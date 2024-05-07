@@ -26,42 +26,6 @@ except:
 env = UnityEnvironment(file_name='./Build/darwin_souls.x86_64', no_graphics=True)
 aec = UnityAECEnv(env)
 
-# num_cycles = 5
-
-# save_one = False
-# count = 0
-
-# aec.reset()
-# for agent in aec.agent_iter(aec.num_agents * num_cycles):
-#     print(type(aec.action_space(agent).sample()))
-#     obs, reward, done, info = aec.last()
-#     print(type(reward))
-#     print(obs)
-#     if isinstance(obs, dict) and 'action_mask' in obs:
-#         for i, val in obs.items():
-#             # print(f'{i}: {len(val)}')
-#             for j in val:
-#                 print(j.shape)
-#                 if save_one and count == 1:
-#                     continue
-#                 if len(j.shape) == 3 and j.shape[1] == 45 and j.shape[2] == 80:
-#                     plt.imsave(fname=f'frame_{count}.png', arr=j[0], cmap='gray', pil_kwargs={'compress_level':0})
-#                     count += 1
-#                 else:
-#                     ...
-#                     # print(j)
-
-#         # print(aec.observation_spaces[agent].sample())
-#         action_mask = obs['action_mask']
-#     if done:
-#         # print('we done here')
-#         action = None
-#     else:
-#         action = aec.action_spaces[agent].sample() # randomly choose an action for example
-#         # print(action)
-#     aec.step(action)
-
-# aec.close()
 
 # Note that hyperparameters may originally be reported in ATARI game frames instead of agent steps
 parser = argparse.ArgumentParser(description='Rainbow')
@@ -187,7 +151,7 @@ while T < args['evaluation_size']:
         aec.reset()
         state, _, _, _ = aec.last()
         state = torch.Tensor(state['observation'][0] if isinstance(state, dict) else state).to(args['device'])
-        print(state.shape)
+        # print(state.shape)
         done = False
         
     aec.step(np.random.randint(0, action_space))
@@ -196,7 +160,7 @@ while T < args['evaluation_size']:
     next_state = torch.Tensor(next_state['observation'][0] if isinstance(next_state, dict) else next_state).to(args['device'])
     val_mem.append(state, None, None, done)
     state = next_state
-    print(f'henlo {T}')
+    # print(f'henlo {T}')
     T += 1
 
 if args['evaluate']:
@@ -251,7 +215,7 @@ else:
             action = dqn_list[selected_en_index].act(state)  # Choose an action greedily (with noisy weights)
         aec.step(action)
         next_state, reward, done, _ = aec.last()
-        next_state = torch.Tensor(next_state['observation'][0] if isinstance(next_state, dict) else next_state).to(args['device'])  # Step
+        next_state = torch.Tensor(next_state['observation'][0] if isinstance(next_state, dict) else next_state).to(args['device']) # Step
         if args['reward_clip'] > 0:
             reward = max(min(reward, args['reward_clip']), -args['reward_clip'])  # Clip rewards
         mem.append(state, action, reward, done)  # Append transition to memory
@@ -307,7 +271,7 @@ else:
                     dqn_list[en_index].eval()  # Set DQN (online network) to evaluation mode
                 # avg_reward, avg_Q = ensemble_test(args, T, dqn_list, val_mem, metrics, results_dir, 
                                                 #   num_ensemble=args['num_ensemble'])  # Test
-                log('T = ' + str(T) + ' / ' + str(args['T_max']) + ' | Avg. reward: ' + str(avg_reward) + ' | Avg. Q: ' + str(avg_Q))
+                log('T = ' + str(T) + ' / ' + str(args['T_max']) + ' | Avg. reward: ' + ' | Avg. Q: ')
                 for en_index in range(args['num_ensemble']):
                     dqn_list[en_index].train()  # Set DQN (online network) back to training mode
 
