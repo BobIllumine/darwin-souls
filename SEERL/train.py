@@ -14,7 +14,7 @@ import datetime
 import pickle
 import bz2
 from tqdm import trange
-# from test import ensemble_test
+from test import test
 import argparse
 
 set_log_level(logging.CRITICAL)
@@ -26,50 +26,13 @@ except:
 env = UnityEnvironment(file_name='./Build/darwin_souls.x86_64', no_graphics=True)
 aec = UnityAECEnv(env)
 
-# num_cycles = 5
-
-# save_one = False
-# count = 0
-
-# aec.reset()
-# for agent in aec.agent_iter(aec.num_agents * num_cycles):
-#     print(type(aec.action_space(agent).sample()))
-#     obs, reward, done, info = aec.last()
-#     print(type(reward))
-#     print(obs)
-#     if isinstance(obs, dict) and 'action_mask' in obs:
-#         for i, val in obs.items():
-#             # print(f'{i}: {len(val)}')
-#             for j in val:
-#                 print(j.shape)
-#                 if save_one and count == 1:
-#                     continue
-#                 if len(j.shape) == 3 and j.shape[1] == 45 and j.shape[2] == 80:
-#                     plt.imsave(fname=f'frame_{count}.png', arr=j[0], cmap='gray', pil_kwargs={'compress_level':0})
-#                     count += 1
-#                 else:
-#                     ...
-#                     # print(j)
-
-#         # print(aec.observation_spaces[agent].sample())
-#         action_mask = obs['action_mask']
-#     if done:
-#         # print('we done here')
-#         action = None
-#     else:
-#         action = aec.action_spaces[agent].sample() # randomly choose an action for example
-#         # print(action)
-#     aec.step(action)
-
-# aec.close()
-
 # Note that hyperparameters may originally be reported in ATARI game frames instead of agent steps
 parser = argparse.ArgumentParser(description='Rainbow')
 parser.add_argument('--id', type=str, default='boot_rainbow', help='Experiment ID')
 parser.add_argument('--seed', type=int, default=123, help='Random seed')
 parser.add_argument('--disable-cuda', action='store_true', help='Disable CUDA')
 # parser.add_argument('--game', type=str, default='space_invaders', choices=atari_py.list_games(), help='ATARI game')
-parser.add_argument('--T-max', type=int, default=int(50e6), metavar='STEPS', help='Number of training steps (4x number of frames)')
+parser.add_argument('--T-max', type=int, default=int(50e3), metavar='STEPS', help='Number of training steps (4x number of frames)')
 parser.add_argument('--max-episode-length', type=int, default=int(108e3), metavar='LENGTH', help='Max episode length in game frames (0 to disable)')
 parser.add_argument('--history-length', type=int, default=4, metavar='T', help='Number of consecutive states processed')
 parser.add_argument('--architecture', type=str, default='canonical', choices=['canonical', 'data-efficient'], metavar='ARCH', help='Network architecture')
@@ -96,7 +59,7 @@ parser.add_argument('--evaluation-interval', type=int, default=200000, metavar='
 parser.add_argument('--evaluation-episodes', type=int, default=10, metavar='N', help='Number of evaluation episodes to average over')
 # TODO: Note that DeepMind's evaluation method is running the latest agent for 500K frames ever every 1M steps
 parser.add_argument('--evaluation-size', type=int, default=500, metavar='N', help='Number of transitions to use for validating Q')
-parser.add_argument('--render', action='store_true', help='Display screen (testing only)')
+# parser.add_argument('--render', action='store_true', help='Display screen (testing only)')
 parser.add_argument('--enable-cudnn', action='store_true', help='Enable cuDNN (faster but nondeterministic)')
 parser.add_argument('--checkpoint-interval', default=0, help='How often to checkpoint the model, defaults to 0 (never checkpoint)')
 parser.add_argument('--memory', help='Path to save/load the memory from')
@@ -161,25 +124,24 @@ def save_memory(memory, memory_path, disable_bzip):
 action_space = aec.action_space(aec.agent_selection).n
 
 # Agent
-# Agent
 dqn = Agent(args, env)
 
 # If a model is provided, and evaluate is fale, presumably we want to resume, so try to load memory
-if args.model is not None and not args.evaluate:
-    if not args.memory:
+if args['model'] is not None and not args['evaluate']:
+    if not args['memory']:
         raise ValueError('Cannot resume training without memory save path. Aborting...')
-    elif not os.path.exists(args.memory):
-        raise ValueError('Could not find memory file at {path}. Aborting...'.format(path=args.memory))
-    mem = load_memory(args.memory, args.disable_bzip_memory)
+    elif not os.path.exists(args['memory']):
+        raise ValueError('Could not find memory file at {path}. Aborting...'.format(path=args['memory']))
+    mem = load_memory(args['memory'], args['disable_bzip_memory'])
 else:
-    mem = ReplayMemory(args, args.memory_capacity)
+    mem = ReplayMemory(args, args['memory_capacity'])
 
-priority_weight_increase = (1 - args.priority_weight) / (args.T_max - args.learn_start)
+priority_weight_increase = (1 - args['priority_weight']) / (args['T_max'] - args['learn_start'])
 
 # Construct validation memory
-val_mem = ReplayMemory(args, args.evaluation_size)
+val_mem = ReplayMemory(args, args['evaluation_size'])
 T, done = 0, True
-while T < args.evaluation_size:
+while T < args['evaluation_size']:
     if done:
         state, done = env.reset(), False
     next_state, _, done = env.step(np.random.randint(0, action_space))
@@ -187,7 +149,7 @@ while T < args.evaluation_size:
     state = next_state
     T += 1
 
-if args.evaluate:
+if args['evaluate']:
     dqn.eval()  # Set DQN (online network) to evaluation mode
     avg_reward, avg_Q = test(args, 0, dqn, val_mem, metrics, results_dir, evaluate=True)  # Test
     print('Avg. reward: ' + str(avg_reward) + ' | Avg. Q: ' + str(avg_Q))
@@ -195,42 +157,42 @@ else:
     # Training loop
     dqn.train()
     T, done = 0, True
-    for T in trange(1, args.T_max + 1):
+    for T in trange(1, args['T_max'] + 1):
         if done:
             state, done = env.reset(), False
 
-        if T % args.replay_frequency == 0:
+        if T % args['replay_frequency'] == 0:
             dqn.reset_noise()  # Draw a new set of noisy weights
 
         action = dqn.act(state)  # Choose an action greedily (with noisy weights)
         next_state, reward, done = env.step(action)  # Step
-        if args.reward_clip > 0:
-            reward = max(min(reward, args.reward_clip), -args.reward_clip)  # Clip rewards
+        if args['reward_clip'] > 0:
+            reward = max(min(reward, args['reward_clip']), -args['reward_clip'])  # Clip rewards
         mem.append(state, action, reward, done)  # Append transition to memory
 
         # Train and test
-        if T >= args.learn_start:
+        if T >= args['learn_start']:
             mem.priority_weight = min(mem.priority_weight + priority_weight_increase, 1)  # Anneal importance sampling weight β to 1
-            if T % args.replay_frequency == 0:
+            if T % args['replay_frequency'] == 0:
                 dqn.learn(mem)  # Train with n-step distributional double-Q learning
                 
-            if T % args.evaluation_interval == 0:
+            if T % args['evaluation_interval'] == 0:
                 dqn.eval()  # Set DQN (online network) to evaluation mode
-                # avg_reward, avg_Q = test(args, T, dqn, val_mem, metrics, results_dir)  # Test
-                log('T = ' + str(T) + ' / ' + str(args.T_max) + ' | Avg. reward: ' + str(avg_reward) + ' | Avg. Q: ' + str(avg_Q))
+                avg_reward, avg_Q = test(args, T, dqn, val_mem, metrics, results_dir)  # Test
+                log('T = ' + str(T) + ' / ' + str(args['T_max']) + ' | Avg. reward: ' + str(avg_reward) + ' | Avg. Q: ' + str(avg_Q))
                 
                 dqn.train()  # Set DQN (online network) back to training mode
 
                 # If memory path provided, save it
-                if args.memory is not None:
-                    save_memory(mem, args.memory, args.disable_bzip_memory)
+                if args['memory'] is not None:
+                    save_memory(mem, args['memory'], args['disable_bzip_memory'])
 
             # Update target network
-            if T % args.target_update == 0:
+            if T % args['target_update'] == 0:
                 dqn.update_target_net()
 
             # Checkpoint the network
-            if (args.checkpoint_interval != 0) and (T % args.checkpoint_interval == 0):
+            if (args['checkpoint_interval'] != 0) and (T % args['checkpoint_interval'] == 0):
                 dqn.save(results_dir, 'checkpoint.pth')
 
         state = next_state

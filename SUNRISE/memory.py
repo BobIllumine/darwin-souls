@@ -133,7 +133,7 @@ class ReplayMemory():
         states, next_states, = torch.stack(states), torch.stack(next_states)
         actions, returns, nonterminals = torch.cat(actions), torch.cat(returns), torch.stack(nonterminals)
         probs = np.array(probs, dtype=np.float32) / p_total  # Calculate normalised probabilities
-        print(probs)
+        # print(probs)
         capacity = self.capacity if self.transitions.full else self.transitions.index
         weights = (capacity * probs) ** -self.priority_weight  # Compute importance-sampling weights w
         weights = torch.tensor(weights / weights.max(), dtype=torch.float32, device=self.device)  # Normalise by max importance-sampling weight from batch

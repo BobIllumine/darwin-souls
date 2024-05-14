@@ -60,7 +60,7 @@ class Agent():
     def act_e_greedy(self, state, epsilon=0.001):  # High ε can reduce evaluation scores drastically
         return np.random.randint(0, self.action_space) if np.random.random() < epsilon else self.act(state)
     
-    # Compute targe Q-value
+    # Compute target Q-value
     def get_target_q(self, next_states):
         with torch.no_grad():
             pns = self.online_net(next_states)
@@ -151,7 +151,7 @@ class Agent():
         loss = -torch.sum(m * log_ps_a, 1)  # Cross-entropy loss (minimises DKL(m||p(s_t, a_t)))
         self.online_net.zero_grad()
         if weight_Q is None:
-            (weights* masks * loss).mean().backward()  # Backpropagate importance-weighted minibatch loss
+            (weights * masks * loss).mean().backward()  # Backpropagate importance-weighted minibatch loss
         else:
             (weight_Q * weights * masks * loss).mean().backward()  # Backpropagate importance-weighted minibatch loss
         self.optimiser.step()

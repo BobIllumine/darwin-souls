@@ -4,7 +4,7 @@ using System;
 using UnityEngine;
 using System.Reflection;
 using Unity.VisualScripting;
-using UnityEditor.ShaderGraph.Internal;
+// using UnityEditor.ShaderGraph.Internal;
 
 
 public abstract class BaseState : MonoBehaviour

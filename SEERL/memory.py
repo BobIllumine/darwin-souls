@@ -90,13 +90,13 @@ class SegmentTree():
 
 class ReplayMemory():
   def __init__(self, args, capacity):
-    self.device = args.device
+    self.device = args['device']
     self.capacity = capacity
-    self.history = args.history_length
-    self.discount = args.discount
-    self.n = args.multi_step
-    self.priority_weight = args.priority_weight  # Initial importance sampling weight β, annealed to 1 over course of training
-    self.priority_exponent = args.priority_exponent
+    self.history = args['history_length']
+    self.discount = args['discount']
+    self.n = args['multi_step']
+    self.priority_weight = args['priority_weight']  # Initial importance sampling weight β, annealed to 1 over course of training
+    self.priority_exponent = args['priority_exponent']
     self.t = 0  # Internal episode timestep counter
     self.n_step_scaling = torch.tensor([self.discount ** i for i in range(self.n)], dtype=torch.float32, device=self.device)  # Discount-scaling vector for n-step returns
     self.transitions = SegmentTree(capacity)  # Store transitions in a wrap-around cyclic buffer within a sum tree for querying priorities

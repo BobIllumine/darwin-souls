@@ -2,6 +2,7 @@
 from __future__ import division
 import os
 import plotly
+from mlagents_envs.envs.unity_aec_env import UnityAECEnv
 from plotly.graph_objs import Scatter
 from plotly.graph_objs.scatter import Line
 import torch
@@ -10,27 +11,32 @@ import numpy as np
 # from env import Env
 
 # Test DQN
-def test(args, T, dqn, val_mem, metrics, results_dir, evaluate=False):
-    env = Env(args)
-    env.eval()
+def test(env: UnityAECEnv, args, T, dqn, val_mem, metrics, results_dir, evaluate=False):
     metrics['steps'].append(T)
     T_rewards, T_Qs = [], []
 
     # Test performance over several episodes
     done = True
-    for _ in range(args.evaluation_episodes):
+    for _ in range(args['evaluation_episodes']):
         while True:
             if done:
-                state, reward_sum, done = env.reset(), 0, False
+                env.reset()
+                state, reward_sum, done, _ = env.last()
+                state = torch.Tensor(state['observation'][0] if isinstance(state, dict) else state).to(args['device'])
+                reward_sum = 0
+                done = False
             action = dqn.act_e_greedy(state)  # Choose an action ε-greedily
-            state, reward, done = env.step(action)  # Step
+            env.step(action)
+            state, reward, done, _ = env.last()  # Step
+            state = torch.Tensor(state['observation'][0] if isinstance(state, dict) else state).to(args['device'])
             reward_sum += reward
-            if args.render:
-                env.render()
+            # if args['render']:
+            #     env.render()
             if done:
                 T_rewards.append(reward_sum)
                 break
-    env.close()
+    # env.close()
+    env.reset()
 
     # Test Q-values over validation memory
     for state in val_mem:  # Iterate over valid states
@@ -55,19 +61,21 @@ def test(args, T, dqn, val_mem, metrics, results_dir, evaluate=False):
     # Return average reward and Q-value
     return avg_reward, avg_Q
 
-def ensemble_test(args, T, dqn, val_mem, metrics, results_dir, num_ensemble, evaluate=False):
-    env = Env(args)
-    env.eval()
+def ensemble_test(env: UnityAECEnv, args, T, dqn, val_mem, metrics, results_dir, num_ensemble, evaluate=False):
     metrics['steps'].append(T)
     T_rewards, T_Qs = [], []
-    action_space = env.action_space()
+    action_space = env.action_space(env.agent_selection).n
         
     # Test performance over several episodes
     done = True
-    for _ in range(args.evaluation_episodes):
+    for _ in range(args['evaluation_episodes']):
         while True:
             if done:
-                state, reward_sum, done = env.reset(), 0, False
+                env.reset()
+                state, reward_sum, done, _ = env.last()
+                state = torch.Tensor(state['observation'][0] if isinstance(state, dict) else state).to(args['device'])
+                reward_sum = 0
+                done = False
             q_tot = 0
             for en_index in range(num_ensemble):
                 if en_index == 0:
@@ -76,14 +84,17 @@ def ensemble_test(args, T, dqn, val_mem, metrics, results_dir, num_ensemble, eva
                     q_tot += dqn[en_index].ensemble_q(state)
             action = q_tot.argmax(1).item()
                     
-            state, reward, done = env.step(action)  # Step
+            env.step(action)
+            state, reward, done, _ = env.last()  # Step
+            state = torch.Tensor(state['observation'][0] if isinstance(state, dict) else state).to(args['device'])
             reward_sum += reward
-            if args.render:
-                env.render()
+            # if args['rsender']:
+                # env.render()
             if done:
                 T_rewards.append(reward_sum)
                 break
-    env.close()
+    # env.close()
+    env.reset()
 
     # Test Q-values over validation memory
     for state in val_mem:  # Iterate over valid states

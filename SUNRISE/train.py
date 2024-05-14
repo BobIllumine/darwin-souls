@@ -10,11 +10,11 @@ from memory import ReplayMemory
 import numpy as np
 import os
 import torch
-import datetime
+from datetime import datetime
 import pickle
 import bz2
 from tqdm import trange
-# from test import ensemble_test
+from test import ensemble_test
 import argparse
 
 set_log_level(logging.CRITICAL)
@@ -33,10 +33,10 @@ parser.add_argument('--id', type=str, default='boot_rainbow', help='Experiment I
 parser.add_argument('--seed', type=int, default=123, help='Random seed')
 parser.add_argument('--disable-cuda', action='store_true', help='Disable CUDA')
 # parser.add_argument('--game', type=str, default='space_invaders', choices=atari_py.list_games(), help='ATARI game')
-parser.add_argument('--T-max', type=int, default=int(50e6), metavar='STEPS', help='Number of training steps (4x number of frames)')
+parser.add_argument('--T-max', type=int, default=int(50e3), metavar='STEPS', help='Number of training steps (4x number of frames)')
 parser.add_argument('--max-episode-length', type=int, default=int(108e3), metavar='LENGTH', help='Max episode length in game frames (0 to disable)')
 parser.add_argument('--history-length', type=int, default=4, metavar='T', help='Number of consecutive states processed')
-parser.add_argument('--architecture', type=str, default='canonical', choices=['canonical', 'data-efficient'], metavar='ARCH', help='Network architecture')
+parser.add_argument('--architecture', type=str, default='data-efficient', choices=['canonical', 'data-efficient'], metavar='ARCH', help='Network architecture')
 parser.add_argument('--hidden-size', type=int, default=512, metavar='SIZE', help='Network hidden size')
 parser.add_argument('--noisy-std', type=float, default=0.1, metavar='σ', help='Initial standard deviation of noisy linear layers')
 parser.add_argument('--atoms', type=int, default=51, metavar='C', help='Discretised size of value distribution')
@@ -49,20 +49,20 @@ parser.add_argument('--priority-exponent', type=float, default=0.5, metavar='ω'
 parser.add_argument('--priority-weight', type=float, default=0.4, metavar='β', help='Initial prioritised experience replay importance sampling weight')
 parser.add_argument('--multi-step', type=int, default=3, metavar='n', help='Number of steps for multi-step return')
 parser.add_argument('--discount', type=float, default=0.99, metavar='γ', help='Discount factor')
-parser.add_argument('--target-update', type=int, default=int(8e3), metavar='τ', help='Number of steps after which to update target network')
-parser.add_argument('--reward-clip', type=int, default=1, metavar='VALUE', help='Reward clipping (0 to disable)')
+parser.add_argument('--target-update', type=int, default=int(8e2), metavar='τ', help='Number of steps after which to update target network')
+parser.add_argument('--reward-clip', type=int, default=0, metavar='VALUE', help='Reward clipping (0 to disable)')
 parser.add_argument('--learning-rate', type=float, default=0.0000625, metavar='η', help='Learning rate')
 parser.add_argument('--adam-eps', type=float, default=1.5e-4, metavar='ε', help='Adam epsilon')
 parser.add_argument('--batch-size', type=int, default=32, metavar='SIZE', help='Batch size')
-parser.add_argument('--learn-start', type=int, default=int(20e3), metavar='STEPS', help='Number of steps before starting training') 
+parser.add_argument('--learn-start', type=int, default=int(1e3), metavar='STEPS', help='Number of steps before starting training') 
 parser.add_argument('--evaluate', action='store_true', help='Evaluate only')
-parser.add_argument('--evaluation-interval', type=int, default=200000, metavar='STEPS', help='Number of training steps between evaluations')
+parser.add_argument('--evaluation-interval', type=int, default=10e3, metavar='STEPS', help='Number of training steps between evaluations')
 parser.add_argument('--evaluation-episodes', type=int, default=10, metavar='N', help='Number of evaluation episodes to average over')
 # TODO: Note that DeepMind's evaluation method is running the latest agent for 500K frames ever every 1M steps
 parser.add_argument('--evaluation-size', type=int, default=500, metavar='N', help='Number of transitions to use for validating Q')
 parser.add_argument('--render', action='store_true', help='Display screen (testing only)')
 parser.add_argument('--enable-cudnn', action='store_true', help='Enable cuDNN (faster but nondeterministic)')
-parser.add_argument('--checkpoint-interval', default=0, help='How often to checkpoint the model, defaults to 0 (never checkpoint)')
+parser.add_argument('--checkpoint-interval', default=10e3, help='How often to checkpoint the model, defaults to 0 (never checkpoint)')
 parser.add_argument('--memory', help='Path to save/load the memory from')
 parser.add_argument('--disable-bzip-memory', action='store_true', help='Don\'t zip the memory file. Not recommended (zipping is a bit slower and much, much smaller)')
 # ensemble
@@ -168,9 +168,9 @@ if args['evaluate']:
         dqn_list[en_index].eval()
     
     # KM: test code
-    # avg_reward, avg_Q = ensemble_test(args, 0, dqn_list, val_mem, metrics, results_dir, 
-                                    #   num_ensemble=args['num_ensemble'], evaluate=True)  # Test
-    # print('Avg. reward: ' + str(avg_reward) + ' | Avg. Q: ' + str(avg_Q))
+    avg_reward, avg_Q = ensemble_test(aec, args, 0, dqn_list, val_mem, metrics, results_dir, 
+                                      num_ensemble=args['num_ensemble'], evaluate=True)  # Test
+    print('Avg. reward: ' + str(avg_reward) + ' | Avg. Q: ' + str(avg_Q))
 else:
     # Training loop
     for en_index in range(args['num_ensemble']):
@@ -269,9 +269,9 @@ else:
             if T % args['evaluation_interval'] == 0:
                 for en_index in range(args['num_ensemble']):
                     dqn_list[en_index].eval()  # Set DQN (online network) to evaluation mode
-                # avg_reward, avg_Q = ensemble_test(args, T, dqn_list, val_mem, metrics, results_dir, 
-                                                #   num_ensemble=args['num_ensemble'])  # Test
-                log('T = ' + str(T) + ' / ' + str(args['T_max']) + ' | Avg. reward: ' + ' | Avg. Q: ')
+                avg_reward, avg_Q = ensemble_test(aec, args, T, dqn_list, val_mem, metrics, results_dir, 
+                                                  num_ensemble=args['num_ensemble'])  # Test
+                log('T = ' + str(T) + ' / ' + str(args['T_max']) + ' | Avg. reward: ' + str(avg_reward) + ' | Avg. Q: ' + str(avg_Q))
                 for en_index in range(args['num_ensemble']):
                     dqn_list[en_index].train()  # Set DQN (online network) back to training mode
 
