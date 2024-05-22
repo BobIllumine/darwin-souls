@@ -10,7 +10,6 @@ public class SonicWaveProjectile : BaseProjectile
     {
         body = GetComponent<Rigidbody2D>();
         animResolver = GetComponent<ProjectileAnimResolver>();
-        print(animResolver);
         animResolver.ChangeStatus(ProjectileStatus.CAST);
     }
     void FixedUpdate() {

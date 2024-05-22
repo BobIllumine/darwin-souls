@@ -3,10 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Reflection;
-using Google.Protobuf.WellKnownTypes;
 using UnityEngine;
 
-public class PoisonCloud : Action, IEffect, ITarget, IMobility, IPeriodic
+public class SnakeBite : Action, IEffect, ITarget, IMobility, IPeriodic
 {
     // // IReward
     // public BaseAgent agent { get; protected set; }

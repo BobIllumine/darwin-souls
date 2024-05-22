@@ -38,7 +38,7 @@ public class HeroActionController : BaseActionController
         }
         catch(KeyNotFoundException e)
         {
-            print(e);
+            // print(e);
             state.busy = false;
             // Debug.Log("bad luck kiddo");
             return;    

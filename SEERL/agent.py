@@ -6,8 +6,28 @@ import torch
 from torch import optim
 
 from model import DQN
+from scheduler import EnsembleCosineAnnealingLR
 
+class DQNPolicy():
+    def __init__(self, net, support, action_space):
+        self.net = net
+        self.support = support
+        self.action_space = action_space
+    
+    def act(self, state):
+        with torch.no_grad():
+            return (self.net(state.unsqueeze(0)) * self.support).sum(2).argmax(1).item()
 
+    # Acts with an ε-greedy policy (used for evaluation only)
+    def act_e_greedy(self, state, epsilon=0.001):  # High ε can reduce evaluation scores drastically
+        return np.random.randint(0, self.action_space) if np.random.random() < epsilon else self.act(state)
+
+    def __call__(self, state, epsilon=-1):
+        if epsilon == -1:
+            return self.act(state)
+        else:
+            return self.act_e_greedy(state, epsilon)
+        
 
 class Agent():
     def __init__(self, args, env):
@@ -20,7 +40,6 @@ class Agent():
         self.batch_size = args['batch_size']
         self.n = args['multi_step']
         self.discount = args['discount']
-
         self.online_net = DQN(args, self.action_space).to(device=args['device'])
         if args['model']:  # Load pretrained model if provided
             if os.path.isfile(args['model']):
@@ -43,6 +62,7 @@ class Agent():
             param.requires_grad = False
 
         self.optimiser = optim.Adam(self.online_net.parameters(), lr=args['learning_rate'], eps=args['adam_eps'])
+        self.scheduler = EnsembleCosineAnnealingLR(self.optimiser, args['learning_rate'], args['T_max'], args['num_ensemble'])
 
     def loss(self, states, actions, returns, next_states, nonterminals):
         # Calculate current state probabilities (online network noise already sampled)
@@ -74,7 +94,7 @@ class Agent():
             m.view(-1).index_add_(0, (l + offset).view(-1), (pns_a * (u.float() - b)).view(-1))  # m_l = m_l + p(s_t+n, a*)(u - b)
             m.view(-1).index_add_(0, (u + offset).view(-1), (pns_a * (b - l.float())).view(-1))  # m_u = m_u + p(s_t+n, a*)(b - l)
         
-        return -torch.sum(m * log_ps_a, 1)
+        return -torch.sum(m * log_ps_a, 1), log_ps 
 
     # Resets noisy weights in all linear layers (of online net only)
     def reset_noise(self):
@@ -95,10 +115,12 @@ class Agent():
 
         loss = self.loss(states, actions, returns, next_states, nonterminals)  # Cross-entropy loss (minimises DKL(m||p(s_t, a_t)))
         self.online_net.zero_grad()
-        (weights * loss).mean().backward()  # Backpropagate importance-weighted minibatch loss
+        (weights * loss[0]).mean().backward()  # Backpropagate importance-weighted minibatch loss
         self.optimiser.step()
+        self.scheduler.step()
 
         mem.update_priorities(idxs, loss.detach().cpu().numpy())  # Update priorities of sampled transitions
+        return loss, states
         
     def update_target_net(self):
         self.target_net.load_state_dict(self.online_net.state_dict())
@@ -117,3 +139,7 @@ class Agent():
 
     def eval(self):
         self.online_net.eval()
+
+    @property
+    def policy(self):
+        return DQNPolicy(self.online_net, self.support)

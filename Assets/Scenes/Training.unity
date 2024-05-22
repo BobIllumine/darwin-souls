@@ -417,7 +417,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6465345513779158342, guid: 3ec7f2e4fc62a59a99e4d0e511001121, type: 3}
       propertyPath: m_RuntimeCameraEnable
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8089443880607092118, guid: 3ec7f2e4fc62a59a99e4d0e511001121, type: 3}
       propertyPath: MaxStep
@@ -633,7 +633,7 @@ Camera:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1285576433}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_ClearFlags: 1
   m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}

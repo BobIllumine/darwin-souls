@@ -85,6 +85,7 @@ class Agent():
         # Calculate current state probabilities (online network noise already sampled)
         log_ps = self.online_net(states, log=True)  # Log probabilities log p(s_t, ·; θonline)
         log_ps_a = log_ps[range(self.batch_size), actions]  # log p(s_t, a_t; θonline)
+        print(log_ps)
 
         with torch.no_grad():
             # Calculate nth next state probabilities
@@ -112,6 +113,7 @@ class Agent():
             m.view(-1).index_add_(0, (u + offset).view(-1), (pns_a * (b - l.float())).view(-1))  # m_u = m_u + p(s_t+n, a*)(b - l)
 
         loss = -torch.sum(m * log_ps_a, 1)  # Cross-entropy loss (minimises DKL(m||p(s_t, a_t)))
+        print(loss.unsqueeze(0))
         self.online_net.zero_grad()
         (weights * loss).mean().backward()  # Backpropagate importance-weighted minibatch loss
         self.optimiser.step()

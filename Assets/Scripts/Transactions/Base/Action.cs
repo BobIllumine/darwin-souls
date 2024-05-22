@@ -31,6 +31,6 @@ public abstract class Action : MonoBehaviour
     {
         Type thisClass = this.GetType();
         Type[] allInterfaces = thisClass.GetInterfaces();
-        print(String.Join(",", allInterfaces.Select(i=>i.Name)));
+        // print(String.Join(",", allInterfaces.Select(i=>i.Name)));
     }
 }

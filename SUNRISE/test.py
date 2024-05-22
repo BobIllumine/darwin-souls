@@ -25,9 +25,10 @@ def test(env: UnityAECEnv, args, T, dqn, val_mem, metrics, results_dir, evaluate
                 state = torch.Tensor(state['observation'][0] if isinstance(state, dict) else state).to(args['device'])
                 reward_sum = 0
                 done = False
-            action = dqn.act_e_greedy(state)  # Choose an action ε-greedily
+            action = dqn.act_e_greedy(state) # Choose an action ε-greedily
             env.step(action)
             state, reward, done, _ = env.last()  # Step
+            print(reward)
             state = torch.Tensor(state['observation'][0] if isinstance(state, dict) else state).to(args['device'])
             reward_sum += reward
             # if args['render']:

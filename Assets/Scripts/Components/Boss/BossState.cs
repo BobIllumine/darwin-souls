@@ -42,7 +42,7 @@ public class BossState : BaseState
 
     public override void Update()
     {
-        print(stats.HP);
+        // print(stats.HP);
         base.Update();
         animResolver.ChangeFloat("attackSpeed", stats.AS);
     }

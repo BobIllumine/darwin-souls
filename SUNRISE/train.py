@@ -16,6 +16,7 @@ import bz2
 from tqdm import trange
 from test import ensemble_test
 import argparse
+from PIL import Image
 
 set_log_level(logging.CRITICAL)
 try:
@@ -24,9 +25,9 @@ except:
     pass
 
 env = UnityEnvironment(file_name='./Build/darwin_souls.x86_64', no_graphics=True)
+
 aec = UnityAECEnv(env)
-
-
+print(aec.action_spaces[aec.agent_selection].n)
 # Note that hyperparameters may originally be reported in ATARI game frames instead of agent steps
 parser = argparse.ArgumentParser(description='Rainbow')
 parser.add_argument('--id', type=str, default='boot_rainbow', help='Experiment ID')
@@ -56,7 +57,7 @@ parser.add_argument('--adam-eps', type=float, default=1.5e-4, metavar='ε', help
 parser.add_argument('--batch-size', type=int, default=32, metavar='SIZE', help='Batch size')
 parser.add_argument('--learn-start', type=int, default=int(1e3), metavar='STEPS', help='Number of steps before starting training') 
 parser.add_argument('--evaluate', action='store_true', help='Evaluate only')
-parser.add_argument('--evaluation-interval', type=int, default=10e3, metavar='STEPS', help='Number of training steps between evaluations')
+parser.add_argument('--evaluation-interval', type=int, default=5000, metavar='STEPS', help='Number of training steps between evaluations')
 parser.add_argument('--evaluation-episodes', type=int, default=10, metavar='N', help='Number of evaluation episodes to average over')
 # TODO: Note that DeepMind's evaluation method is running the latest agent for 500K frames ever every 1M steps
 parser.add_argument('--evaluation-size', type=int, default=500, metavar='N', help='Number of transitions to use for validating Q')
@@ -68,9 +69,9 @@ parser.add_argument('--disable-bzip-memory', action='store_true', help='Don\'t z
 # ensemble
 parser.add_argument('--num-ensemble', type=int, default=3, metavar='N', help='Number of ensembles')
 parser.add_argument('--beta-mean', type=float, default=1.0, help='mean of bernoulli')
-parser.add_argument('--temperature', type=float, default=0.0, help='temperature for CF')
-parser.add_argument('--ucb-infer', type=float, default=0.0, help='coeff for UCB infer')
-parser.add_argument('--ucb-train', type=float, default=0.0, help='coeff for UCB train')
+parser.add_argument('--temperature', type=float, default=0.5, help='temperature for CF')
+parser.add_argument('--ucb-infer', type=float, default=0.3, help='coeff for UCB infer')
+parser.add_argument('--ucb-train', type=float, default=0.1, help='coeff for UCB train')
 
 # Setup
 args = vars(parser.parse_args())
@@ -89,6 +90,7 @@ exp_name += '/seed_' + str(args['seed']) + '/'
 results_dir = os.path.join('./results', exp_name)
 if not os.path.exists(results_dir):
     os.makedirs(results_dir)
+
 
 metrics = {'steps': [], 'rewards': [], 'Qs': [], 'best_avg_reward': -float('inf')}
 np.random.seed(args['seed'])
@@ -151,6 +153,8 @@ while T < args['evaluation_size']:
         aec.reset()
         state, _, _, _ = aec.last()
         state = torch.Tensor(state['observation'][0] if isinstance(state, dict) else state).to(args['device'])
+        numstate = state.numpy()
+        plt.imsave(fname=f'pictures/frame_{T}.png', arr=numstate, cmap='gray', pil_kwargs={'compress_level':0})
         # print(state.shape)
         done = False
         
@@ -212,7 +216,7 @@ else:
             ucb_score = mean_Q + args['ucb_infer'] * std_Q
             action = ucb_score.argmax(1)[0].item()
         else:
-            action = dqn_list[selected_en_index].act(state)  # Choose an action greedily (with noisy weights)
+            action = dqn_list[selected_en_index].act(state) # Choose an action greedily (with noisy weights)
         aec.step(action)
         next_state, reward, done, _ = aec.last()
         next_state = torch.Tensor(next_state['observation'][0] if isinstance(next_state, dict) else next_state).to(args['device']) # Step

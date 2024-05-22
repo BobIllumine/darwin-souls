@@ -55,6 +55,7 @@ public class HeroState : BaseState
         {
             // print("ye im dead mate");
             // Destroy(gameObject);
+            print(stats.MaxHP);
             agent.AddReward(-stats.MaxHP * 3);
             agent.EndEpisode(); 
         }
@@ -70,14 +71,13 @@ public class HeroState : BaseState
         actionController = GetComponent<HeroActionController>();
         animResolver = GetComponent<HeroAnimResolver>();
         busy = false;
-        // stats.MaxHP = defaultMaxHP;
-        // stats.HP = defaultHP;
-        // stats.AD = defaultAD;
-        // stats.MS = defaultMS;
-        // stats.AS = defaultAS;
-        // stats.CR = defaultCR;
-        // stats.status = defaultStatus;
-        // print(stats.MS);
+        stats.MaxHP = defaultMaxHP;
+        stats.HP = defaultHP;
+        stats.AD = defaultAD;
+        stats.MS = defaultMS;
+        stats.AS = defaultAS;
+        stats.CR = defaultCR;
+        stats.status = defaultStatus;
         lastImpact = (null, stats);
     }
 }

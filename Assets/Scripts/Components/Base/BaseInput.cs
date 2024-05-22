@@ -12,5 +12,5 @@ public abstract class BaseInput : MonoBehaviour
     protected string axis;
     public BaseActionController actionController { get; protected set; }
     public BaseMovementController movementController { get; protected set; }
-    public abstract void AddAction(Button button);
+    public abstract void BufferButton(Button button);
 }

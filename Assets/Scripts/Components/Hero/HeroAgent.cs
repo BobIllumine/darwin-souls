@@ -75,18 +75,31 @@ public class HeroAgent : BaseAgent
             case 1: 
                 // print("im trying to move");
                 movementController.Move(-1);
+                AddReward(0.01f);
                 break;
             case 2:
                 // print("im trying to move");
                 movementController.Move(1);
+                AddReward(0.01f);
                 break;
             case 3:
-                input.AddAction(Button.JUMP);
+                input.BufferButton(Button.JUMP);
+                AddReward(0.01f);
                 break;
             case 4:
-                input.AddAction(Button.DEFAULT_ATTACK);
+                input.BufferButton(Button.DEFAULT_ATTACK);
+                AddReward(0.02f);
+                break;
+            case 5:
+                input.BufferButton(Button.SKILL_1);
+                AddReward(0.03f);
+                break;
+            case 6:
+                input.BufferButton(Button.SKILL_2);
+                AddReward(0.03f);
                 break;
             default:
+                AddReward(-0.01f);
                 break;
         }
         // print($"move: {move}");

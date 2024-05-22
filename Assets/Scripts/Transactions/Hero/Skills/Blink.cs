@@ -25,8 +25,6 @@ public class Blink : Action, IMobility
         emission.enabled = true;
         
         Vector2 newLocation = new Vector2(movementController.transform.position.x + (state.stats.MS * animResolver.faceTowards * Time.fixedDeltaTime * 0.5f), movementController.transform.position.y);
-        print(newLocation);
-        
 
         movementController.Teleport(newLocation);
 

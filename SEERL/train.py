@@ -16,11 +16,15 @@ import bz2
 from tqdm import trange
 from test import test
 import argparse
+import cvxpy as cp
 
 set_log_level(logging.CRITICAL)
 try:
     env.close()
 except:
+    pass
+
+def KL(state, policy_1, policy_2):
     pass
 
 env = UnityEnvironment(file_name='./Build/darwin_souls.x86_64', no_graphics=True)
@@ -70,6 +74,7 @@ parser.add_argument('--beta-mean', type=float, default=1.0, help='mean of bernou
 parser.add_argument('--temperature', type=float, default=0.0, help='temperature for CF')
 parser.add_argument('--ucb-infer', type=float, default=0.0, help='coeff for UCB infer')
 parser.add_argument('--ucb-train', type=float, default=0.0, help='coeff for UCB train')
+parser.add_argument('--beta', type=float, default=1.5, help='mean of bernoulli')
 
 # Setup
 args = vars(parser.parse_args())
@@ -93,10 +98,12 @@ metrics = {'steps': [], 'rewards': [], 'Qs': [], 'best_avg_reward': -float('inf'
 np.random.seed(args['seed'])
 torch.manual_seed(np.random.randint(1, 10000))
 if torch.cuda.is_available() and not args['disable_cuda']:
+    print('yup')
     args['device'] = torch.device('cuda')
     torch.cuda.manual_seed(np.random.randint(1, 10000))
     torch.backends.cudnn.enabled = args['enable_cudnn']
 else:
+    print('nop')
     args['device'] = torch.device('cpu')
 
 # Simple ISO 8601 timestamped logger
@@ -124,7 +131,17 @@ def save_memory(memory, memory_path, disable_bzip):
 action_space = aec.action_space(aec.agent_selection).n
 
 # Agent
-dqn = Agent(args, env)
+dqn_list = []
+for _ in range(args['num_ensemble']):
+    dqn = Agent(args, aec)
+    dqn_list.append(dqn)
+
+state_list = []
+policy_list = []
+loss_list = []
+ps_list = []
+beta = args['beta']
+
 
 # If a model is provided, and evaluate is fale, presumably we want to resume, so try to load memory
 if args['model'] is not None and not args['evaluate']:
@@ -155,30 +172,63 @@ if args['evaluate']:
     print('Avg. reward: ' + str(avg_reward) + ' | Avg. Q: ' + str(avg_Q))
 else:
     # Training loop
-    dqn.train()
+    for en_index in range(args['num_ensemble']):
+        dqn_list[en_index].train()
     T, done = 0, True
+    selected_en_index = np.random.randint(args['num_ensemble'])
+
     for T in trange(1, args['T_max'] + 1):
         if done:
-            state, done = env.reset(), False
+            aec.reset()
+            (state, _, _, _), done = aec.last(), False
+            state = torch.Tensor(state['observation'][0] if isinstance(state, dict) else next_state).to(args['device'])
+            selected_en_index = np.random.randint(args['num_ensemble'])
 
         if T % args['replay_frequency'] == 0:
             dqn.reset_noise()  # Draw a new set of noisy weights
 
         action = dqn.act(state)  # Choose an action greedily (with noisy weights)
-        next_state, reward, done = env.step(action)  # Step
+        aec.step(action)
+        next_state, reward, done, _ = aec.last()  # Step
+        next_state = torch.Tensor(next_state['observation'][0] if isinstance(next_state, dict) else next_state).to(args['device'])
         if args['reward_clip'] > 0:
             reward = max(min(reward, args['reward_clip']), -args['reward_clip'])  # Clip rewards
         mem.append(state, action, reward, done)  # Append transition to memory
-
+        
         # Train and test
         if T >= args['learn_start']:
             mem.priority_weight = min(mem.priority_weight + priority_weight_increase, 1)  # Anneal importance sampling weight β to 1
             if T % args['replay_frequency'] == 0:
-                dqn.learn(mem)  # Train with n-step distributional double-Q learning
+                loss = dqn_list[selected_en_index].learn(mem)  # Train with n-step distributional double-Q learning
+                
+                if T % (np.ceil(args['T_max'] / args['num_ensemble'])) == 0:
+                    policy_list.append(dqn_list[selected_en_index].policy) 
                 
             if T % args['evaluation_interval'] == 0:
-                dqn.eval()  # Set DQN (online network) to evaluation mode
-                avg_reward, avg_Q = test(args, T, dqn, val_mem, metrics, results_dir)  # Test
+                state_list = []
+                W = cp.Variable(len(policy_list))
+                # Objective
+                objective_terms = []
+                for s in range(len(state_list)):
+                    B = []
+                    for i in range(policy_list):
+                        kl_sum = cp.sum([KL(state_list[s], policy_list[i], policy_list[k]) for k in range(policy_list) if k != i])
+                        B.append(loss_list[s, i] - beta / (len(policy_list) - 1) * kl_sum)
+                    objective_terms.append(ps_list[s] * cp.square(cp.sum(cp.multiply(W, B))))
+
+                objective = cp.Minimize(sum(objective_terms))
+                # Constraints
+                constraints = [
+                    cp.sum(W) == 1,  # Sum of weights must be 1
+                    W >= 0           # Weights must be non-negative
+                ]
+                problem = cp.Problem(objective, constraints)
+                problem.solve()
+                prob_dist = W.value
+                # TODO: select 
+                for en_index in range(args['num_ensemble']):
+                    dqn_list[en_index].eval()  # Set DQN (online network) to evaluation mode
+                avg_reward, avg_Q = test(args, T, dqn_list[selected_en_index], val_mem, metrics, results_dir)  # Test
                 log('T = ' + str(T) + ' / ' + str(args['T_max']) + ' | Avg. reward: ' + str(avg_reward) + ' | Avg. Q: ' + str(avg_Q))
                 
                 dqn.train()  # Set DQN (online network) back to training mode
@@ -193,7 +243,7 @@ else:
 
             # Checkpoint the network
             if (args['checkpoint_interval'] != 0) and (T % args['checkpoint_interval'] == 0):
-                dqn.save(results_dir, 'checkpoint.pth')
+                dqn_list[selected_en_index].save(results_dir, 'checkpoint.pth')
 
         state = next_state
 

@@ -33,36 +33,27 @@ public class HeroInput : BaseInput
 
 
     }
-    public override void AddAction(Button button = Button.NO_ACTION)
+    public override void BufferButton(Button button = Button.NO_ACTION)
     {
         queue.Enqueue(new InputAction(button, Time.time, buffer));
     }
     void Update()
     {
-        // AddAction(Button.JUMP);
-        // buffer.Enqueue(Button.JUMP);
-        // var ax = Input.GetAxis(axis);
         if(Input.GetKeyDown((KeyCode)buttons[Button.JUMP]))
-            AddAction(Button.JUMP);
-            // movementController.Jump();
-        
+            BufferButton(Button.JUMP);
+
         else if(Input.GetKeyDown((KeyCode)buttons[Button.DEFAULT_ATTACK]))
-            AddAction(Button.DEFAULT_ATTACK);
-            // actionController.Do("defaultAttack");
+            BufferButton(Button.DEFAULT_ATTACK);
 
         else if(Input.GetKeyDown((KeyCode)buttons[Button.SKILL_1]))
-            AddAction(Button.SKILL_1);
-            // actionController.Do(skillList[0]);
-        
+            BufferButton(Button.SKILL_1);
+
         else if(Input.GetKeyDown((KeyCode)buttons[Button.SKILL_2]))
-            AddAction(Button.SKILL_2);
-        //     actionController.Do(skillList[1])
+            BufferButton(Button.SKILL_2);
+
         else if(Input.GetKeyDown((KeyCode)buttons[Button.SKILL_3]))
-            AddAction(Button.SKILL_3);
-        // else
-            // AddAction(Button.NO_ACTION, ax);
+            BufferButton(Button.SKILL_3);
         movementController.Move(Input.GetAxis(axis));
-        // AddAxis(Input.GetAxis(axis));
     }
     void FixedUpdate()
     {
@@ -73,8 +64,6 @@ public class HeroInput : BaseInput
                 return;
             if(lastAction.Validate())
             {
-                // if(lastAction.axis != 0f)
-                    // movementController.Move(lastAction.axis);
                 switch(lastAction.button)
                 {
                     case Button.JUMP:
@@ -98,7 +87,6 @@ public class HeroInput : BaseInput
                 break;
             }
         }
-        // print($"{name}: {lastAction}, {buffer.Count}");
     }
     public void AddSkill(string name, Action action) 
     {

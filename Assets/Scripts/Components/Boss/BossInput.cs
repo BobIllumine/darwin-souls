@@ -27,7 +27,7 @@ public class BossInput : BaseInput
         }
         skillList = new List<string>();
     }
-    public override void AddAction(Button button)
+    public override void BufferButton(Button button)
     {
         queue.Enqueue(new InputAction(button, Time.time, buffer));
     }

@@ -70,6 +70,8 @@ public static class Mappings
         ["VampireSlash"] = typeof(VampireSlash),
         ["Fireball"] = typeof(Fireball),
         ["Stomp"] = typeof(Stomp),
-        ["Blink"] = typeof(Blink)
+        ["Blink"] = typeof(Blink),
+        ["SonicWave"] = typeof(SonicWave),
+        ["PoisonCloud"] = typeof(SnakeBite)
     };
 }

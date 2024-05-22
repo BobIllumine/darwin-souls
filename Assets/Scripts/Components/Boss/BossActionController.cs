@@ -35,7 +35,7 @@ public class BossActionController : BaseActionController
         }
         catch(KeyNotFoundException e)
         {
-            print(e);
+            // print(e);
             Stats newStats = new Stats(state.stats);
             newStats.status = Status.OK;
             state.ApplyChanges(newStats);
