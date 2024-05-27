@@ -9,9 +9,9 @@ using UnityEngine.InputSystem;
 using Unity.VisualScripting;
 
 
-public class HeroAgent : BaseAgent
+public class BossAgent : BaseAgent
 {
-    private HeroState state;
+    private BossState state;
     private BaseState oppState;
     private BaseMovementController oppMovementController;
     private Vector3 oppInitialPos;
@@ -27,11 +27,11 @@ public class HeroAgent : BaseAgent
     }
     public override void Initialize()
     {
-        state = GetComponent<HeroState>();
+        state = GetComponent<BossState>();
         oppState = opponent.GetComponent<BaseState>();
         input = GetComponent<BaseInput>();
-        actionController = GetComponent<HeroActionController>();
-        movementController = GetComponent<HeroMovementController>();
+        actionController = GetComponent<BossActionController>();
+        movementController = GetComponent<BossMovementController>();
         oppMovementController = opponent.GetComponent<BaseMovementController>();
         initialPos = transform.position;
         initialRot = transform.rotation;

@@ -4,13 +4,15 @@ using Unity.Sentis.Layers;
 using UnityEngine;
 using UnityEngine.Animations;
 
-public class HeroAnimResolver : BaseAnimResolver
+public class DummyAnimResolver : BaseAnimResolver
 {
     private Animator animator;
+    private DummyMovementController movementController;
     void Start()
     {
         status = ActionStatus.IDLE;
         animator = GetComponent<Animator>();
+        movementController = GetComponent<DummyMovementController>();
         faceTowards = 1;
     }
     

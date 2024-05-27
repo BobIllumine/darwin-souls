@@ -5,14 +5,14 @@ using Unity.Sentis.Layers;
 using UnityEngine;
 using UnityEngine.Analytics;
 
-// [RequireComponent(typeof(HeroMovementController))]
-// [RequireComponent(typeof(HeroActionController))]
 public class HeroInput : BaseInput
 {
     void Start()
     {
         actionController = GetComponent<HeroActionController>();
         movementController = GetComponent<HeroMovementController>();
+        skillManager = GetComponent<HeroSkillManager>();
+        
         queue = new LimitedQueue<InputAction>(20);
         buffer = Time.fixedDeltaTime * 10;
         if(player == Player.P1)
@@ -25,12 +25,6 @@ public class HeroInput : BaseInput
             buttons = Mappings.DefaultInputMapP2;
             axis = "Horizontal_P2";
         }
-        skillList = new List<string>();
-
-        AddSkill("blink", gameObject.AddComponent<Blink>().Initialize(gameObject));
-        AddSkill("dash", gameObject.AddComponent<Dash>().Initialize(gameObject));
-        AddSkill("sonicWave", gameObject.AddComponent<SonicWave>().Initialize(gameObject));
-
 
     }
     public override void BufferButton(Button button = Button.NO_ACTION)
@@ -70,16 +64,16 @@ public class HeroInput : BaseInput
                         movementController.Jump();
                         break;
                     case Button.DEFAULT_ATTACK:
-                        actionController.Do("defaultAttack");
+                        actionController.Do("DefaultAttack");
                         break;
                     case Button.SKILL_1:
-                        actionController.Do(skillList[0]);
+                        actionController.Do(skillManager.GetSkill(0));
                         break;
                     case Button.SKILL_2:
-                        actionController.Do(skillList[1]);
+                        actionController.Do(skillManager.GetSkill(1));
                         break;
                     case Button.SKILL_3:
-                        actionController.Do(skillList[2]);
+                        actionController.Do(skillManager.GetSkill(2));
                         break;
                     default:
                         break;
@@ -87,10 +81,5 @@ public class HeroInput : BaseInput
                 break;
             }
         }
-    }
-    public void AddSkill(string name, Action action) 
-    {
-        actionController.AddAction(name, action);
-        skillList.Add(name);
     }
 }

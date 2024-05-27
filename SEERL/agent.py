@@ -4,6 +4,7 @@ import os
 import numpy as np
 import torch
 from torch import optim
+from torch.nn.utils import clip_grad_norm_
 
 from model import DQN
 from scheduler import EnsembleCosineAnnealingLR
@@ -23,10 +24,11 @@ class DQNPolicy():
         return np.random.randint(0, self.action_space) if np.random.random() < epsilon else self.act(state)
 
     def __call__(self, state, epsilon=-1):
-        if epsilon == -1:
-            return self.act(state)
-        else:
-            return self.act_e_greedy(state, epsilon)
+        # if epsilon == -1:
+            # return self.act(state)
+        # else:
+            # return self.act_e_greedy(state, epsilon)
+        return self.net(state.unsqueeze(0)) * self.support
         
 
 class Agent():
@@ -119,7 +121,7 @@ class Agent():
         self.optimiser.step()
         self.scheduler.step()
 
-        mem.update_priorities(idxs, loss.detach().cpu().numpy())  # Update priorities of sampled transitions
+        mem.update_priorities(idxs, loss[0].detach().cpu().numpy())  # Update priorities of sampled transitions
         return loss, states
         
     def update_target_net(self):
@@ -142,4 +144,4 @@ class Agent():
 
     @property
     def policy(self):
-        return DQNPolicy(self.online_net, self.support)
+        return DQNPolicy(self.online_net, self.action_space, self.support)

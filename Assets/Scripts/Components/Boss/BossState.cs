@@ -53,13 +53,14 @@ public class BossState : BaseState
         if(stats.HP <= 0)
         {
             // Destroy(gameObject);
-            // agent.AddReward(stats.MaxHP * 3);
-            // agent.EndEpisode(); 
+            agent.AddReward(stats.MaxHP * 3);
+            agent.EndEpisode(); 
         }
     }
     void Start()
     {
-        agent = null;
+        agent = GetComponent<BossAgent>();
+;
     }
 
     void Awake()

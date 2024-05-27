@@ -7,13 +7,13 @@ using UnityEngine.Analytics;
 
 // [RequireComponent(typeof(BossMovementController))]
 // [RequireComponent(typeof(BossActionController))]
-public class BossInput : BaseInput
+public class DummyInput : BaseInput
 {
     void Start()
     {
-        actionController = GetComponent<BossActionController>();
-        movementController = GetComponent<BossMovementController>();
-        skillManager = GetComponent<BossSkillManager>();
+        actionController = GetComponent<DummyActionController>();
+        movementController = GetComponent<DummyMovementController>();
+        skillManager = GetComponent<DummySkillManager>();
         queue = new LimitedQueue<InputAction>(20);
         buffer = Time.fixedDeltaTime * 30;
         if(player == Player.P1)
@@ -34,22 +34,6 @@ public class BossInput : BaseInput
 
     void Update()
     {
-        // buffer.Enqueue(Button.JUMP);
-        // if(Input.GetKeyDown(buttons[Button.JUMP]))
-        //     // AddAction(Button.JUMP);
-        //     movementController.Jump();
-        
-        // if(Input.GetKeyDown(buttons[Button.DEFAULT_ATTACK]))
-        //     // AddAction(Button.DEFAULT_ATTACK);
-        //     actionController.Do("defaultAttack");
-
-        // // if(Input.GetKeyDown(buttons[Button.SKILL_1]))
-        // //     actionController.Do(skillList[0]);
-        
-        // // if(Input.GetKeyDown(buttons[Button.SKILL_2]))
-        // //     actionController.Do(skillList[1]);
-        
-        // movementController.Move(Input.GetAxis(axis));
     }
     void FixedUpdate()
     {
@@ -74,8 +58,5 @@ public class BossInput : BaseInput
                 break;
             }
         }
-        
-
-        // print($"{name}: {lastAction}, {buffer.Count}");
     }
 }

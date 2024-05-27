@@ -24,7 +24,7 @@ try:
 except:
     pass
 
-env = UnityEnvironment(file_name='./Build/darwin_souls.x86_64', no_graphics=True)
+env = UnityEnvironment(file_name='./Build/darwin_souls.x86_64', no_graphics=False)
 
 aec = UnityAECEnv(env)
 print(aec.action_spaces[aec.agent_selection].n)
@@ -153,9 +153,6 @@ while T < args['evaluation_size']:
         aec.reset()
         state, _, _, _ = aec.last()
         state = torch.Tensor(state['observation'][0] if isinstance(state, dict) else state).to(args['device'])
-        numstate = state.numpy()
-        plt.imsave(fname=f'pictures/frame_{T}.png', arr=numstate, cmap='gray', pil_kwargs={'compress_level':0})
-        # print(state.shape)
         done = False
         
     aec.step(np.random.randint(0, action_space))

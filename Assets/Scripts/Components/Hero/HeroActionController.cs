@@ -19,7 +19,7 @@ public class HeroActionController : BaseActionController
         canCast = true;
 
         actionSpace = new Dictionary<string, Action>() {
-            ["defaultAttack"] = gameObject.GetComponentInChildren<DefaultAttack>().Initialize(gameObject),
+            ["DefaultAttack"] = gameObject.GetComponentInChildren<DefaultAttack>().Initialize(gameObject),
         };
     }
     public override void Do(string name)
@@ -28,7 +28,7 @@ public class HeroActionController : BaseActionController
         {
             pair.Value.Serialize();
         }
-        if(!isActionable || (!canCast && name != "defaultAttack") || (!canAttack && name == "defaultAttack"))
+        if(!isActionable || (!canCast && name != "DefaultAttack") || (!canAttack && name == "DefaultAttack"))
             return;
         try
         {
@@ -36,7 +36,7 @@ public class HeroActionController : BaseActionController
             state.busy = true;
             activeAction.Fire(state.stats.CR);
         }
-        catch(KeyNotFoundException e)
+        catch
         {
             // print(e);
             state.busy = false;

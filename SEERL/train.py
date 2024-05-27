@@ -5,7 +5,7 @@ from mlagents_envs.envs.unity_pettingzoo_base_env import UnityPettingzooBaseEnv
 from mlagents_envs.logging_util import set_log_level
 import logging
 import matplotlib.pyplot as plt
-from agent import Agent
+from agent import Agent, DQNPolicy
 from memory import ReplayMemory
 import numpy as np
 import os
@@ -14,7 +14,7 @@ import datetime
 import pickle
 import bz2
 from tqdm import trange
-from test import test
+from test import ensemble_test
 import argparse
 import cvxpy as cp
 
@@ -24,8 +24,23 @@ try:
 except:
     pass
 
-def KL(state, policy_1, policy_2):
-    pass
+def KL(state, policy_1: DQNPolicy, policy_2: DQNPolicy):
+    # Ensure the distributions are normalized (sum to 1)
+    p = policy_1(state)
+    q = policy_2(state)
+
+    p = p / p.sum()
+    q = q / q.sum()
+    
+    # Avoid division by zero and log of zero by adding a small epsilon
+    epsilon = 1e-10
+    p = p + epsilon
+    q = q + epsilon
+    
+    # Calculate KL divergence
+    kl_div = (p * torch.log(p / q)).sum()
+    return kl_div
+
 
 env = UnityEnvironment(file_name='./Build/darwin_souls.x86_64', no_graphics=True)
 aec = UnityAECEnv(env)
@@ -57,18 +72,19 @@ parser.add_argument('--reward-clip', type=int, default=1, metavar='VALUE', help=
 parser.add_argument('--learning-rate', type=float, default=0.0000625, metavar='η', help='Learning rate')
 parser.add_argument('--adam-eps', type=float, default=1.5e-4, metavar='ε', help='Adam epsilon')
 parser.add_argument('--batch-size', type=int, default=32, metavar='SIZE', help='Batch size')
-parser.add_argument('--learn-start', type=int, default=int(20e3), metavar='STEPS', help='Number of steps before starting training') 
+parser.add_argument('--learn-start', type=int, default=int(1e3), metavar='STEPS', help='Number of steps before starting training') 
 parser.add_argument('--evaluate', action='store_true', help='Evaluate only')
-parser.add_argument('--evaluation-interval', type=int, default=200000, metavar='STEPS', help='Number of training steps between evaluations')
+parser.add_argument('--evaluation-interval', type=int, default=2e3, metavar='STEPS', help='Number of training steps between evaluations')
 parser.add_argument('--evaluation-episodes', type=int, default=10, metavar='N', help='Number of evaluation episodes to average over')
 # TODO: Note that DeepMind's evaluation method is running the latest agent for 500K frames ever every 1M steps
 parser.add_argument('--evaluation-size', type=int, default=500, metavar='N', help='Number of transitions to use for validating Q')
 # parser.add_argument('--render', action='store_true', help='Display screen (testing only)')
 parser.add_argument('--enable-cudnn', action='store_true', help='Enable cuDNN (faster but nondeterministic)')
-parser.add_argument('--checkpoint-interval', default=0, help='How often to checkpoint the model, defaults to 0 (never checkpoint)')
+parser.add_argument('--checkpoint-interval', default=10e3, help='How often to checkpoint the model, defaults to 0 (never checkpoint)')
 parser.add_argument('--memory', help='Path to save/load the memory from')
 parser.add_argument('--disable-bzip-memory', action='store_true', help='Don\'t zip the memory file. Not recommended (zipping is a bit slower and much, much smaller)')
 # ensemble
+parser.add_argument('--num-policy', type=int, default=200, help='Number of policies')
 parser.add_argument('--num-ensemble', type=int, default=3, metavar='N', help='Number of ensembles')
 parser.add_argument('--beta-mean', type=float, default=1.0, help='mean of bernoulli')
 parser.add_argument('--temperature', type=float, default=0.0, help='temperature for CF')
@@ -98,12 +114,10 @@ metrics = {'steps': [], 'rewards': [], 'Qs': [], 'best_avg_reward': -float('inf'
 np.random.seed(args['seed'])
 torch.manual_seed(np.random.randint(1, 10000))
 if torch.cuda.is_available() and not args['disable_cuda']:
-    print('yup')
     args['device'] = torch.device('cuda')
     torch.cuda.manual_seed(np.random.randint(1, 10000))
     torch.backends.cudnn.enabled = args['enable_cudnn']
 else:
-    print('nop')
     args['device'] = torch.device('cpu')
 
 # Simple ISO 8601 timestamped logger
@@ -160,16 +174,29 @@ val_mem = ReplayMemory(args, args['evaluation_size'])
 T, done = 0, True
 while T < args['evaluation_size']:
     if done:
-        state, done = env.reset(), False
-    next_state, _, done = env.step(np.random.randint(0, action_space))
+        aec.reset()
+        state, _, _, _ = aec.last()
+        state = torch.Tensor(state['observation'][0] if isinstance(state, dict) else state).to(args['device'])
+        done = False
+        
+    aec.step(np.random.randint(0, action_space))
+    next_state, _, done, _ = aec.last()
+    
+    next_state = torch.Tensor(next_state['observation'][0] if isinstance(next_state, dict) else next_state).to(args['device'])
     val_mem.append(state, None, None, done)
     state = next_state
+    # print(f'henlo {T}')
     T += 1
 
 if args['evaluate']:
-    dqn.eval()  # Set DQN (online network) to evaluation mode
-    avg_reward, avg_Q = test(args, 0, dqn, val_mem, metrics, results_dir, evaluate=True)  # Test
+    for en_index in range(args['num_ensemble']):
+        dqn_list[en_index].eval()
+    
+    # KM: test code
+    avg_reward, avg_Q = ensemble_test(aec, args, 0, dqn_list, val_mem, metrics, results_dir, 
+                                      num_ensemble=args['num_ensemble'], evaluate=True)  # Test
     print('Avg. reward: ' + str(avg_reward) + ' | Avg. Q: ' + str(avg_Q))
+
 else:
     # Training loop
     for en_index in range(args['num_ensemble']):
@@ -185,9 +212,9 @@ else:
             selected_en_index = np.random.randint(args['num_ensemble'])
 
         if T % args['replay_frequency'] == 0:
-            dqn.reset_noise()  # Draw a new set of noisy weights
+            dqn_list[selected_en_index].reset_noise()  # Draw a new set of noisy weights
 
-        action = dqn.act(state)  # Choose an action greedily (with noisy weights)
+        action = dqn_list[selected_en_index].act(state)  # Choose an action greedily (with noisy weights)
         aec.step(action)
         next_state, reward, done, _ = aec.last()  # Step
         next_state = torch.Tensor(next_state['observation'][0] if isinstance(next_state, dict) else next_state).to(args['device'])
@@ -199,10 +226,14 @@ else:
         if T >= args['learn_start']:
             mem.priority_weight = min(mem.priority_weight + priority_weight_increase, 1)  # Anneal importance sampling weight β to 1
             if T % args['replay_frequency'] == 0:
-                loss = dqn_list[selected_en_index].learn(mem)  # Train with n-step distributional double-Q learning
+                loss, states = dqn_list[selected_en_index].learn(mem)  # Train with n-step distributional double-Q learning
                 
-                if T % (np.ceil(args['T_max'] / args['num_ensemble'])) == 0:
-                    policy_list.append(dqn_list[selected_en_index].policy) 
+                if T % (np.ceil(args['T_max'] / args['num_policy'])) == 0:
+                    policy_list.append(dqn_list[selected_en_index].policy)
+                    ps_list.append(loss[1])
+                    state_list.append(states)
+                    loss_list.append(loss[0])
+                    # print(len(policy_list), len(ps_list), len(state_list), len(loss_list))
                 
             if T % args['evaluation_interval'] == 0:
                 state_list = []
@@ -225,13 +256,16 @@ else:
                 problem = cp.Problem(objective, constraints)
                 problem.solve()
                 prob_dist = W.value
+                print(prob_dist.argsort())
+                selection = [policy_list[i] for i in prob_dist.argsort()[-args['num_ensemble']:]]
                 # TODO: select 
                 for en_index in range(args['num_ensemble']):
                     dqn_list[en_index].eval()  # Set DQN (online network) to evaluation mode
-                avg_reward, avg_Q = test(args, T, dqn_list[selected_en_index], val_mem, metrics, results_dir)  # Test
+                # avg_reward, avg_Q = ensemble_test(args, T, dqn_list, val_mem, metrics, results_dir)  # Test
                 log('T = ' + str(T) + ' / ' + str(args['T_max']) + ' | Avg. reward: ' + str(avg_reward) + ' | Avg. Q: ' + str(avg_Q))
                 
-                dqn.train()  # Set DQN (online network) back to training mode
+                for en_index in range(args['num_ensemble']):
+                    dqn_list[en_index].train()  # Set DQN (online network) back to training mode
 
                 # If memory path provided, save it
                 if args['memory'] is not None:
