@@ -7,8 +7,10 @@ using Unity.VisualScripting;
 using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine;
 
-public class SonicWave : Action, IEffect, IProjectile, ITarget, ITransient
+public class SonicWave : Action, IEffect, IProjectile, ITarget, ITransient, IReward
 {
+    public BaseAgent agent { get; protected set; }
+    public float reward { get; protected set; }
     // ITransient
     public float duration { get; protected set; }
     // IStateDependent
@@ -62,6 +64,7 @@ public class SonicWave : Action, IEffect, IProjectile, ITarget, ITransient
             targetAnimResolver = other.gameObject.GetComponent<BaseAnimResolver>();
             targetAnimResolver.ChangeStatus(targetStatus);
             UseOnState(other.gameObject.GetComponent<BaseState>(), cr);
+            agent.AddReward(reward);
         }
     }
     public override void Fire(float cr)
@@ -108,13 +111,36 @@ public class SonicWave : Action, IEffect, IProjectile, ITarget, ITransient
     }
     void Update() {
         curHP_d = -(int)(state.stats.AD * 0.2f) - 10;
+        reward = -curHP_d;
     }
     public override Action Initialize(GameObject obj) 
     {
         animResolver = obj.GetComponent<BaseAnimResolver>();
         state = obj.GetComponent<BaseState>();
+        agent = obj.GetComponent<BaseAgent>();
         curHP_d = -(int)(state.stats.AD * 0.2f) - 10;
-        duration = 1;
+        reward = -curHP_d;
+        duration = 3;
         return this;
+    }
+
+    public override float[] Serialize()
+    {
+        float[] row = Mappings.DefaultSkillRow;
+        row[1] = (isAvailable ? 1f : 0f);
+        row[4] = curHP_d;
+        row[5] = curHP_mult;
+        row[6] = maxHP_d;
+        row[7] = maxHP_mult;
+        row[8] = AD_d;
+        row[9] = AD_mult;
+        row[10] = MS_d;
+        row[11] = MS_mult;
+        row[12] = AS_d;
+        row[13] = AS_mult;
+        row[14] = CR_d;
+        row[15] = CR_mult;
+        row[16] = (float)(int)newStatus;
+        return row; 
     }
 }

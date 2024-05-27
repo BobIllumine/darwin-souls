@@ -8,7 +8,6 @@ public enum Status {
     ENSNARED,
     MUTE,
     DISARMED,
-    IN_ACTION,
 }
 
 public enum ActionStatus {

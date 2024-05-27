@@ -91,4 +91,23 @@ public class Rage : Action, IBuff, ITransient
     {
         return;
     }
+
+    public override float[] Serialize()
+    {
+        float[] row = Mappings.DefaultSkillRow;
+        row[1] = (isAvailable ? 1f : 0f);
+        row[17] = self_curHP_d;
+        row[18] = self_curHP_mult;
+        row[19] = self_maxHP_d;
+        row[20] = self_maxHP_mult;
+        row[21] = self_AD_d;
+        row[22] = self_AD_mult;
+        row[23] = self_MS_d;
+        row[24] = self_MS_mult;
+        row[25] = self_AS_d;
+        row[26] = self_AS_mult;
+        row[27] = self_CR_d;
+        row[28] = self_CR_mult;
+        return row; 
+    }
 }

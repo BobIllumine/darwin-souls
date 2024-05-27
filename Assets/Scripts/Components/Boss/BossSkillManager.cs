@@ -10,7 +10,7 @@ public class BossSkillManager : BaseSkillManager
     {
         actionController = GetComponent<HeroActionController>();
         currentSkills = new List<string>();
-
+        
         foreach(KeyValuePair<string, Type> kvp in Mappings.SkillMap)
             AddSkill(kvp.Key);
     }

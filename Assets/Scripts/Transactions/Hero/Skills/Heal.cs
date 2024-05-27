@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
-public class Heal : Action, IBuff
+public class Heal : Action, IBuff, IReward
 {
+    public BaseAgent agent { get; protected set; }
+    public float reward { get; protected set; }
     // IBuff
     public int self_maxHP_d { get; protected set; }
     public float self_maxHP_mult { get; protected set; }
@@ -66,20 +68,41 @@ public class Heal : Action, IBuff
     }
     void Update() 
     {
-        self_curHP_d = 50;
+        self_curHP_d = (int)(state.stats.MaxHP * 0.1f);
+        reward = self_curHP_d;
     }
 
     public override Action Initialize(GameObject obj) 
     {
         animResolver = obj.GetComponent<BaseAnimResolver>();
         state = obj.GetComponent<BaseState>();
-        self_curHP_d = 50;
-
+        agent = obj.GetComponent<BaseAgent>();
+        self_curHP_d = (int)(state.stats.MaxHP * 0.1f);
+        reward = self_curHP_d;
         return this;
     }
 
     public override void UseOnState(BaseState state, float cr)
     {
         return;
+    }
+
+    public override float[] Serialize()
+    {
+        float[] row = Mappings.DefaultSkillRow;
+        row[1] = (isAvailable ? 1f : 0f);
+        row[17] = self_curHP_d;
+        row[18] = self_curHP_mult;
+        row[19] = self_maxHP_d;
+        row[20] = self_maxHP_mult;
+        row[21] = self_AD_d;
+        row[22] = self_AD_mult;
+        row[23] = self_MS_d;
+        row[24] = self_MS_mult;
+        row[25] = self_AS_d;
+        row[26] = self_AS_mult;
+        row[27] = self_CR_d;
+        row[28] = self_CR_mult;
+        return row; 
     }
 }

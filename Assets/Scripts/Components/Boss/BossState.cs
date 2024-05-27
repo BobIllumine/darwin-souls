@@ -60,7 +60,6 @@ public class BossState : BaseState
     void Start()
     {
         agent = GetComponent<BossAgent>();
-;
     }
 
     void Awake()

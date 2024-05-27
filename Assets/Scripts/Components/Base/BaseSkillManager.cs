@@ -8,6 +8,7 @@ public abstract class BaseSkillManager : MonoBehaviour
 {
     public BaseActionController actionController { get; protected set; }
     public List<string> currentSkills { get; protected set; }
+
     virtual public void AddRandomSkill() {
 
         System.Random random = new System.Random();
@@ -33,5 +34,16 @@ public abstract class BaseSkillManager : MonoBehaviour
         if(index < 0 || index >= currentSkills.Count)
             return "null";
         return currentSkills[index];
+    }
+
+    virtual public Action GetActionInstance(string name)
+    {
+        try {
+            return actionController.actionSpace[name];
+        } 
+        catch(KeyNotFoundException e)
+        {
+            return null;
+        }
     }
 }

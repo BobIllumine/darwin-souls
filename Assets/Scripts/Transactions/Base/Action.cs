@@ -27,10 +27,8 @@ public abstract class Action : MonoBehaviour
 
     public abstract Action Initialize(GameObject obj);
 
-    public virtual void Serialize() 
-    {
-        Type thisClass = this.GetType();
-        Type[] allInterfaces = thisClass.GetInterfaces();
-        // print(String.Join(",", allInterfaces.Select(i=>i.Name)));
-    }
+    public abstract float[] Serialize();
+    // Type thisClass = this.GetType();
+    // Type[] allInterfaces = thisClass.GetInterfaces();
+    // print(String.Join(",", allInterfaces.Select(i=>i.Name)));
 }

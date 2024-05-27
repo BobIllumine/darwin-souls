@@ -58,4 +58,11 @@ public class Blink : Action, IMobility
         partSystem = partObj.GetComponent<ParticleSystem>();
         return this;
     }
+
+    public override float[] Serialize()
+    {
+        float[] row = Mappings.DefaultSkillRow;
+        row[1] = (isAvailable ? 1f : 0f);
+        return row; 
+    }
 }

@@ -41,7 +41,7 @@ public class BossInput : BaseInput
         
         // if(Input.GetKeyDown(buttons[Button.DEFAULT_ATTACK]))
         //     // AddAction(Button.DEFAULT_ATTACK);
-        //     actionController.Do("defaultAttack");
+        //     actionController.Do("DefaultAttack");
 
         // // if(Input.GetKeyDown(buttons[Button.SKILL_1]))
         // //     actionController.Do(skillList[0]);
@@ -66,7 +66,7 @@ public class BossInput : BaseInput
                         movementController.Jump();
                         break;
                     case Button.DEFAULT_ATTACK:
-                        actionController.Do("defaultAttack");
+                        actionController.Do("DefaultAttack");
                         break;
                     default:
                         break;

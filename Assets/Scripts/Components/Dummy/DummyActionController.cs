@@ -21,22 +21,18 @@ public class DummyActionController : BaseActionController
     }
     public override void Do(string name)
     {
-        if(!isActionable || (!canCast && name != "defaultAttack") || (!canAttack && name == "defaultAttack"))
+        if(!isActionable || (!canCast && name != "DefaultAttack") || (!canAttack && name == "DefaultAttack"))
             return;
         try
         {
             activeAction = actionSpace[name];
-            Stats newStats = new Stats(state.stats);
-            newStats.status = Status.STUNNED;
-            state.ApplyChanges(newStats);
+            state.busy = true;
             activeAction.Fire(state.stats.CR);
         }
-        catch(KeyNotFoundException e)
+        catch
         {
             // print(e);
-            Stats newStats = new Stats(state.stats);
-            newStats.status = Status.OK;
-            state.ApplyChanges(newStats);
+            state.busy = false;
             // Debug.Log("bad luck kiddo");
             return;    
         }

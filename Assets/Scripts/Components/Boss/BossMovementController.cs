@@ -4,9 +4,6 @@ using System.Collections.Generic;
 using UnityEditor.Rendering;
 using UnityEngine;
 
-// [RequireComponent(typeof(BossState))]
-// [RequireComponent(typeof(BossAnimResolver))]
-// [RequireComponent(typeof(BossActionController))]
 public class BossMovementController : BaseMovementController
 {
     private Rigidbody2D body;
@@ -63,32 +60,21 @@ public class BossMovementController : BaseMovementController
         isGrounded = Physics2D.OverlapCollider(col, filter, results) > 0;
         body.velocity = new Vector2(direction.x * state.stats.MS * Time.fixedDeltaTime, body.velocity.y);
         velocity = body.velocity;
-        // print($"{name}: {velocity}");
-        // print($"{name}: {isGrounded}");
         if(body.velocity.y < 0)
             body.gravityScale = _fallScale;
     }
     public override void Teleport(Vector2 position)
     {
-        // body.isKinematic = true;
         var tmpVelocity = velocity;
         body.velocity = Vector2.zero;
         body.Sleep();
         body.position = new Vector2(position.x, position.y);
-        // body.angularVelocity = 0f;
-        // body.position = position;
-        // body.isKinematic = false;
         body.WakeUp();
         body.velocity = tmpVelocity;
-        // print(isMovable);
-        // Stop();
     }
     public override void Stop()
     {
         body.velocity = Vector2.zero;
-        Stats newStats = new Stats(state.stats);
-        newStats.status = Status.STUNNED;
-        state.ApplyChanges(newStats);
     }
     public override void Jump() 
     {
@@ -104,7 +90,6 @@ public class BossMovementController : BaseMovementController
     public override void Move(float dir)
     {
         direction = Vector2.right * dir;
-        // body.velocity = new Vector2(direction.x * state.MS * Time.fixedDeltaTime, body.velocity.y);
         if(dir > 0)
             animResolver.ChangeFacedDirection(1);
         else if(dir < 0)

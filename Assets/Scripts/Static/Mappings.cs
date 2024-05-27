@@ -74,4 +74,66 @@ public static class Mappings
         ["SonicWave"] = typeof(SonicWave),
         ["PoisonCloud"] = typeof(SnakeBite)
     };
+
+    public static Dictionary<string, int> SkillIndex = new Dictionary<string, int>() {
+        ["Dash"] = 0,
+        ["Rage"] = 1,
+        ["Heal"] = 2,
+        ["VampireSlash"] = 3,
+        ["Fireball"] = 4,
+        ["Stomp"] = 5,
+        ["Blink"] = 6,
+        ["SonicWave"] = 7,
+        ["PoisonCloud"] = 8
+    };
+
+    public static Dictionary<string, int> SkillTableLayout = new Dictionary<string, int>() {
+        ["idx"] = 0,
+        ["button"] = 1,
+        ["ready"] = 2,
+        ["mobility"] = 4,
+        [""] = 5,
+        [""] = 6,
+        [""] = 7,
+        [""] = 8,
+        [""] = 9,
+        [""] = 10,
+        [""] = 11,
+        [""] = 12,
+        [""] = 13,
+        [""] = 14,
+        [""] = 15,
+    };
+
+    public static float[] DefaultSkillRow = new float[29] {
+        0f, // idx
+        0f, // ready
+        0f, // mobility
+        0f, // button
+        0f, // curHP_d
+        1f, // curHP_mult
+        0f, // maxHP_d
+        1f, // maxHP_mult
+        0f, // AD_d
+        1f, // AD_mult
+        0f, // MS_d
+        1f, // MS_mult
+        0f, // AS_d
+        1f, // AS_mult
+        0f, // CR_d
+        0f, // CR_mult
+        0f, // newStatus
+        0f, // selfCurHP_d
+        1f, // selfCurHP_mult
+        0f, // selfMaxHP_d
+        1f, // selfMaxHP_mult
+        0f, // selfAD_d
+        1f, // selfAD_mult
+        0f, // selfMS_d
+        1f, // selfMS_mult
+        0f, // selfAS_d
+        1f, // selfAS_mult
+        0f, // selfCR_d
+        1f // selfCR_mult
+    };
 }

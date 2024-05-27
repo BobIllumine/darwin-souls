@@ -5,11 +5,11 @@ using System.Net;
 using System.Reflection;
 using UnityEngine;
 
-public class SnakeBite : Action, IEffect, ITarget, IMobility, IPeriodic
+public class SnakeBite : Action, IEffect, ITarget, IMobility, IPeriodic, IReward
 {
     // // IReward
-    // public BaseAgent agent { get; protected set; }
-    // public float reward { get; protected set; }
+    public BaseAgent agent { get; protected set; }
+    public float reward { get; protected set; }
     // IPeriodic
     public float perDuration { get; protected set; }
     public float period { get; protected set; }
@@ -64,7 +64,7 @@ public class SnakeBite : Action, IEffect, ITarget, IMobility, IPeriodic
             targetAnimResolver = other.gameObject.GetComponent<BaseAnimResolver>();
             targetAnimResolver.ChangeStatus(targetStatus);
             UseOnState(other.gameObject.GetComponent<BaseState>(), cr);
-            // agent.AddReward(reward);
+            agent.AddReward(reward);
         }
     }
     void Start() 
@@ -91,16 +91,36 @@ public class SnakeBite : Action, IEffect, ITarget, IMobility, IPeriodic
     void Update() 
     {
         curHP_d = -state.stats.AD;
-        // reward = curHP_d;
+        reward = -curHP_d * (perDuration / period);
     }
     public override Action Initialize(GameObject obj) 
     {
         movementController = obj.GetComponent<BaseMovementController>();
         animResolver = obj.GetComponent<BaseAnimResolver>();
         state = obj.GetComponent<BaseState>();
-        // agent = obj.GetComponent<BaseAgent>();
+        agent = obj.GetComponent<BaseAgent>();
         curHP_d = -state.stats.AD;
-        // reward = curHP_d;
+        reward = -curHP_d * (perDuration / period);
         return this;
+    }
+
+    public override float[] Serialize()
+    {
+        float[] row = Mappings.DefaultSkillRow;
+        row[1] = (isAvailable ? 1f : 0f);
+        row[4] = curHP_d;
+        row[5] = curHP_mult;
+        row[6] = maxHP_d;
+        row[7] = maxHP_mult;
+        row[8] = AD_d;
+        row[9] = AD_mult;
+        row[10] = MS_d;
+        row[11] = MS_mult;
+        row[12] = AS_d;
+        row[13] = AS_mult;
+        row[14] = CR_d;
+        row[15] = CR_mult;
+        row[16] = (float)(int)newStatus;
+        return row; 
     }
 }

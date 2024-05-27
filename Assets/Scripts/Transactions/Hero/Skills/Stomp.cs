@@ -13,8 +13,6 @@ public class Stomp : Action, IMobility
         if(!isAvailable)
             return;
             
-        PropertyInfo ms = state.GetType().GetProperty("MS");
-
         Stats newStats = new Stats(state.stats);
         newStats.MS *= 10;
         state.ApplyChanges(newStats);
@@ -24,7 +22,7 @@ public class Stomp : Action, IMobility
         
         animResolver.ChangeStatus(status);
         
-        newStats.MS *= 10;
+        newStats.MS /= 10;
         state.ApplyChanges(newStats);
 
         StartCoroutine(StartCooldown(cr));
@@ -45,5 +43,12 @@ public class Stomp : Action, IMobility
         animResolver = obj.GetComponent<BaseAnimResolver>();
         state = obj.GetComponent<BaseState>();
         return this;
+    }
+
+    public override float[] Serialize()
+    {
+        float[] row = Mappings.DefaultSkillRow;
+        row[1] = (isAvailable ? 1f : 0f);
+        return row; 
     }
 }

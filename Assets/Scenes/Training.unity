@@ -360,7 +360,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8089443880607092118, guid: 3ec7f2e4fc62a59a99e4d0e511001121, type: 3}
       propertyPath: MaxStep
-      value: 5000000
+      value: 5000
       objectReference: {fileID: 0}
     - target: {fileID: 8089443880607092118, guid: 3ec7f2e4fc62a59a99e4d0e511001121, type: 3}
       propertyPath: opponent
@@ -369,8 +369,33 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1601792176009571056, guid: 3ec7f2e4fc62a59a99e4d0e511001121, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 700186820}
   m_SourcePrefab: {fileID: 100100000, guid: 3ec7f2e4fc62a59a99e4d0e511001121, type: 3}
+--- !u!1 &700186819 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1601792176009571056, guid: 3ec7f2e4fc62a59a99e4d0e511001121, type: 3}
+  m_PrefabInstance: {fileID: 700186818}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &700186820
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 700186819}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a355aea5139f66eb4bc74190fd83020a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  agent: {fileID: 700186819}
+  sensorName: SkillSensor
+  maxRows: 9
+  maxCols: 29
+  observationStacks: 4
 --- !u!1 &763166295
 GameObject:
   m_ObjectHideFlags: 0

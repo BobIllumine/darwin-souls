@@ -24,10 +24,6 @@ public class HeroActionController : BaseActionController
     }
     public override void Do(string name)
     {
-        foreach(KeyValuePair<string, Action> pair in actionSpace)
-        {
-            pair.Value.Serialize();
-        }
         if(!isActionable || (!canCast && name != "DefaultAttack") || (!canAttack && name == "DefaultAttack"))
             return;
         try

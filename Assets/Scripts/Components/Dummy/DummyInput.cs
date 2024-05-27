@@ -50,7 +50,7 @@ public class DummyInput : BaseInput
                         movementController.Jump();
                         break;
                     case Button.DEFAULT_ATTACK:
-                        actionController.Do("defaultAttack");
+                        actionController.Do("DefaultAttack");
                         break;
                     default:
                         break;
