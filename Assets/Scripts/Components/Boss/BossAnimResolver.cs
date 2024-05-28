@@ -7,12 +7,10 @@ using UnityEngine.Animations;
 public class BossAnimResolver : BaseAnimResolver
 {
     private Animator animator;
-    private BossMovementController movementController;
-    void Start()
+    void Awake()
     {
         status = ActionStatus.IDLE;
         animator = GetComponent<Animator>();
-        movementController = GetComponent<BossMovementController>();
         faceTowards = 1;
     }
     

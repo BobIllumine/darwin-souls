@@ -45,5 +45,10 @@ public enum Button {
     SKILL_2,
     SKILL_3,
     SKILL_4,
+    SKILL_5,
+    SKILL_6,
+    SKILL_7,
+    SKILL_8,
+    SKILL_9,
     NO_ACTION
 }

@@ -71,9 +71,13 @@ public class VampireSlash : Action, IEffect, ITarget, IBuff, IReward
     public override void Fire(float cr)
     {
         if(!isAvailable)
+        {
+            state.busy = false;
             return;
+        }
         this.cr = cr;
         animResolver.ChangeStatus(status);
+        state.busy = false;
         StartCoroutine(StartCooldown(cr));
     }
     public override void UseOnState(BaseState state, float cr)
@@ -91,7 +95,7 @@ public class VampireSlash : Action, IEffect, ITarget, IBuff, IReward
             agent.AddReward(reward);
         }
     }
-    void Start() 
+    void Awake() 
     {
         curHP_d = 0;
         curHP_mult = 1f;
@@ -160,7 +164,7 @@ public class VampireSlash : Action, IEffect, ITarget, IBuff, IReward
         row[13] = AS_mult;
         row[14] = CR_d;
         row[15] = CR_mult;
-        row[16] = (float)(int)newStatus;
+        row[16] = newStatus is null ? 0f : (float)(int)newStatus;
         row[17] = self_curHP_d;
         row[18] = self_curHP_mult;
         row[19] = self_maxHP_d;

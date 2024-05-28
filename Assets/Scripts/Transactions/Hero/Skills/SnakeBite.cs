@@ -48,10 +48,17 @@ public class SnakeBite : Action, IEffect, ITarget, IMobility, IPeriodic, IReward
     // Action
     public override void Fire(float cr)
     {
+        if(!isAvailable)
+        {
+            state.busy = false;
+            return;
+        }
         this.cr = cr;
         if (movementController.isGrounded)
             movementController.Stop();
         animResolver.ChangeStatus(status);
+        state.busy = false;
+        StartCoroutine(StartCooldown(cr));
     }
     public override void UseOnState(BaseState state, float cr)
     {
@@ -67,7 +74,7 @@ public class SnakeBite : Action, IEffect, ITarget, IMobility, IPeriodic, IReward
             agent.AddReward(reward);
         }
     }
-    void Start() 
+    void Awake() 
     {
         curHP_d = 0;
         curHP_mult = 1f;
@@ -120,7 +127,7 @@ public class SnakeBite : Action, IEffect, ITarget, IMobility, IPeriodic, IReward
         row[13] = AS_mult;
         row[14] = CR_d;
         row[15] = CR_mult;
-        row[16] = (float)(int)newStatus;
+        row[16] = newStatus is null ? 0f : (float)(int)newStatus;
         return row; 
     }
 }

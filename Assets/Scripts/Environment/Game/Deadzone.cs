@@ -12,6 +12,11 @@ public class Deadzone : MonoBehaviour
             Stats newStats = new Stats(state.stats);
             newStats.HP = 0;
             state.ApplyChanges(newStats);
+            return;
+        }
+        if(other.gameObject.CompareTag("Projectile")) {
+            Destroy(other.gameObject);
+            return;
         }   
     }
 }

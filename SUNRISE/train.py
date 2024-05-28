@@ -128,6 +128,7 @@ action_space = aec.action_space(aec.agent_selection).n
 
 # Agent
 dqn_list = []
+
 for _ in range(args['num_ensemble']):
     dqn = Agent(args, aec)
     dqn_list.append(dqn)
@@ -139,7 +140,6 @@ if args['model'] is not None and not args['evaluate']:
     elif not os.path.exists(args['memory']):
         raise ValueError('Could not find memory file at {path}. Aborting...'.format(path=args['memory']))
     mem = load_memory(args['memory'], args['disable_bzip_memory'])
-
 else:
     mem = ReplayMemory(args, args['memory_capacity'], args['beta_mean'], args['num_ensemble'])
 

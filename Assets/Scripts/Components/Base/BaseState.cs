@@ -9,12 +9,7 @@ using Unity.VisualScripting;
 
 public abstract class BaseState : MonoBehaviour
 {
-    private Stats _stat = new Stats();
-    public Stats stats
-    {
-        get { return _stat; }
-        protected set { _stat = value; }
-    }
+    public Stats stats { get; protected set; }
     public bool busy { get; set; }
     public BaseAgent agent { get; protected set; }
     public BaseActionController actionController { get; protected set; }

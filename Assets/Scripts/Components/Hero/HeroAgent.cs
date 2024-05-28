@@ -17,15 +17,27 @@ public class HeroAgent : BaseAgent
     private Vector3 oppInitialPos;
     private Quaternion oppInitialRot;
     private Stats oppInitialStats;
+    private GameObject gameManager;
 
     public override void ResetParameters()
     {
+        movementController = GetComponent<HeroMovementController>();
+        oppMovementController = opponent.GetComponent<BaseMovementController>();
+
+        gameManager = GameObject.FindGameObjectsWithTag("GameController")[0];
+        initialPos = gameManager.GetComponent<GameManager>().GetInitialPosition(gameObject.name);
+        initialStats = gameManager.GetComponent<GameManager>().GetInitialStats(gameObject.name);
+
+        oppInitialPos = gameManager.GetComponent<GameManager>().GetInitialPosition(oppState.gameObject.name);
+        oppInitialStats = gameManager.GetComponent<GameManager>().GetInitialStats(oppState.gameObject.name);
+
         movementController.Teleport(initialPos);
         oppMovementController.Teleport(oppInitialPos);
         state.ApplyChanges(initialStats);
         oppState.ApplyChanges(oppInitialStats);
     }
-    public override void Initialize()
+
+    protected void Start()
     {
         state = GetComponent<HeroState>();
         oppState = opponent.GetComponent<BaseState>();
@@ -33,18 +45,23 @@ public class HeroAgent : BaseAgent
         actionController = GetComponent<HeroActionController>();
         movementController = GetComponent<HeroMovementController>();
         oppMovementController = opponent.GetComponent<BaseMovementController>();
-        initialPos = transform.position;
-        initialRot = transform.rotation;
-        oppInitialPos = oppState.transform.position;
-        oppInitialRot = oppState.transform.rotation;
-        initialStats = new Stats(state.stats);
-        oppInitialStats = new Stats(oppState.stats);
+        
     }
+    // protected override void OnEnable()
+    // {
+    //     base.OnEnable();
+    //     // initialPos = transform.position;
+    //     // initialRot = transform.rotation;
+    //     // oppInitialPos = oppState.transform.position;
+    //     // oppInitialRot = oppState.transform.rotation;
+    //     // initialStats = new Stats(state.stats);
+    //     // oppInitialStats = new Stats(oppState.stats);
+    // }
 
     public override void OnEpisodeBegin()
     {
         ResetParameters();
-        print($"Reward: {GetCumulativeReward()}");
+        // print($"Reward: {GetCumulativeReward()}");
     }
 
     public override void CollectObservations(VectorSensor sensor)
@@ -81,6 +98,34 @@ public class HeroAgent : BaseAgent
                 break;
             case 6:
                 input.BufferButton(Button.SKILL_2);
+                AddReward(0.03f);
+                break;
+            case 7:
+                input.BufferButton(Button.SKILL_3);
+                AddReward(0.03f);
+                break;
+            case 8:
+                input.BufferButton(Button.SKILL_4);
+                AddReward(0.03f);
+                break;
+            case 9:
+                input.BufferButton(Button.SKILL_5);
+                AddReward(0.03f);
+                break;
+            case 10:
+                input.BufferButton(Button.SKILL_6);
+                AddReward(0.03f);
+                break;
+            case 11:
+                input.BufferButton(Button.SKILL_7);
+                AddReward(0.03f);
+                break;
+            case 12:
+                input.BufferButton(Button.SKILL_8);
+                AddReward(0.03f);
+                break;
+            case 13:
+                input.BufferButton(Button.SKILL_9);
                 AddReward(0.03f);
                 break;
             default:

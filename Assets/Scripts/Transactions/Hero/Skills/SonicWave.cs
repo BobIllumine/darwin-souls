@@ -75,10 +75,14 @@ public class SonicWave : Action, IEffect, IProjectile, ITarget, ITransient, IRew
             return;
         }
         this.cr = cr;
-        GameObject wave = Instantiate(projectile, new Vector2(transform.position.x + 1, transform.position.y), Quaternion.Euler(0, 0, 0));
-        wave.transform.SetParent(transform);
-        SonicWaveProjectile wave_proj = wave.GetComponent<SonicWaveProjectile>();
-        wave_proj.Initialize(Vector2.right * animResolver.faceTowards, Vector2.right * animResolver.faceTowards * 1000 * Time.fixedDeltaTime);
+        GameObject wave = Instantiate(projectile, 
+                                        new Vector2(transform.position.x, transform.position.y), 
+                                        Quaternion.Euler(0, animResolver.faceTowards > 0 ? 0 : 180f, 0));
+        SonicWaveProjectile wave_proj = wave.GetComponent<SonicWaveProjectile>()
+                                        .Initialize(Vector2.right * animResolver.faceTowards, 
+                                                    Vector2.right * animResolver.faceTowards * 2000 * Time.fixedDeltaTime, 
+                                                    gameObject) as SonicWaveProjectile;
+        wave_proj.transform.parent = null;
         state.busy = false;
         StartCoroutine(StartCooldown(cr));
     }
@@ -86,7 +90,7 @@ public class SonicWave : Action, IEffect, IProjectile, ITarget, ITransient, IRew
     {
         state.ApplyTimedChanges(GetModifiedStats(state), duration);
     }
-    void Start() 
+    void Awake() 
     {
         curHP_d = 0;
         curHP_mult = 1f;
@@ -100,11 +104,10 @@ public class SonicWave : Action, IEffect, IProjectile, ITarget, ITransient, IRew
         AS_mult = 1f;
         CR_d = 0f;
         CR_mult = 1f;
-        newStatus = Status.STUNNED;
         status = ActionStatus.ATTACK;
         targetStatus = ActionStatus.HURT;
 
-        cooldown = 7;
+        cooldown = 3;
         isAvailable = true;
         
         projectile = Resources.Load<GameObject>("Prefabs/Projectiles/Sonic Wave");
@@ -121,6 +124,7 @@ public class SonicWave : Action, IEffect, IProjectile, ITarget, ITransient, IRew
         curHP_d = -(int)(state.stats.AD * 0.2f) - 10;
         reward = -curHP_d;
         duration = 3;
+        newStatus = Status.STUNNED;
         return this;
     }
 

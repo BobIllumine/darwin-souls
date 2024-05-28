@@ -8,9 +8,11 @@ public class BossSkillManager : BaseSkillManager
 {
     void Awake()
     {
-        actionController = GetComponent<HeroActionController>();
         currentSkills = new List<string>();
-        
+    }
+    void Start()
+    {
+        actionController = GetComponent<BossActionController>();
         foreach(KeyValuePair<string, Type> kvp in Mappings.SkillMap)
             AddSkill(kvp.Key);
     }

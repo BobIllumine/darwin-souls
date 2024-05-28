@@ -18,33 +18,51 @@ public class BossAgent : BaseAgent
     private Quaternion oppInitialRot;
     private Stats oppInitialStats;
 
+    private GameObject gameManager;
+
     public override void ResetParameters()
     {
+        movementController = GetComponent<BossMovementController>();
+        oppMovementController = opponent.GetComponent<BaseMovementController>();
+
+        gameManager = GameObject.FindGameObjectsWithTag("GameController")[0];
+        
+        initialPos = gameManager.GetComponent<GameManager>().GetInitialPosition(gameObject.name);
+        initialStats = gameManager.GetComponent<GameManager>().GetInitialStats(gameObject.name);
+        
+        oppInitialPos = gameManager.GetComponent<GameManager>().GetInitialPosition(oppState.gameObject.name);
+        oppInitialStats = gameManager.GetComponent<GameManager>().GetInitialStats(oppState.gameObject.name);
+
+
         movementController.Teleport(initialPos);
         oppMovementController.Teleport(oppInitialPos);
         state.ApplyChanges(initialStats);
         oppState.ApplyChanges(oppInitialStats);
     }
-    public override void Initialize()
-    {
+    protected void Start()
+    {        
         state = GetComponent<BossState>();
         oppState = opponent.GetComponent<BaseState>();
         input = GetComponent<BaseInput>();
-        actionController = GetComponent<BossActionController>();
-        movementController = GetComponent<BossMovementController>();
+        actionController = GetComponent<HeroActionController>();
+        movementController = GetComponent<HeroMovementController>();
         oppMovementController = opponent.GetComponent<BaseMovementController>();
-        initialPos = transform.position;
-        initialRot = transform.rotation;
-        oppInitialPos = oppState.transform.position;
-        oppInitialRot = oppState.transform.rotation;
-        initialStats = new Stats(state.stats);
-        oppInitialStats = new Stats(oppState.stats);
     }
+    // protected override void OnEnable()
+    // {
+    //     base.OnEnable();
+    //     // initialPos = transform.position;
+    //     // initialRot = transform.rotation;
+    //     // oppInitialPos = oppState.transform.position;
+    //     // oppInitialRot = oppState.transform.rotation;
+    //     // initialStats = new Stats(state.stats);
+    //     // oppInitialStats = new Stats(oppState.stats);
+    // }
 
     public override void OnEpisodeBegin()
     {
         ResetParameters();
-        print($"Reward: {GetCumulativeReward()}");
+        // print($"Reward: {GetCumulativeReward()}");
     }
 
     public override void CollectObservations(VectorSensor sensor)

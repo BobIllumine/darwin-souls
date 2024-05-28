@@ -11,7 +11,10 @@ public class Stomp : Action, IMobility
     public override void Fire(float cr)
     {
         if(!isAvailable)
+        {
+            state.busy = false;
             return;
+        }
             
         Stats newStats = new Stats(state.stats);
         newStats.MS *= 10;
@@ -24,14 +27,14 @@ public class Stomp : Action, IMobility
         
         newStats.MS /= 10;
         state.ApplyChanges(newStats);
-
+        state.busy = false;
         StartCoroutine(StartCooldown(cr));
     }
     public override void UseOnState(BaseState state, float cr)
     {
         return;
     }
-    void Start() 
+    void Awake() 
     {
         isAvailable = true;
         status = ActionStatus.FALL;

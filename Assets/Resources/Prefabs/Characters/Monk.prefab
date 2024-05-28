@@ -22,6 +22,8 @@ GameObject:
   - component: {fileID: 8089443880607092118}
   - component: {fileID: 55518928982876584}
   - component: {fileID: 6465345513779158342}
+  - component: {fileID: 6628901482210269431}
+  - component: {fileID: 8538309288791946837}
   m_Layer: 6
   m_Name: Monk
   m_TagString: Agent
@@ -275,8 +277,8 @@ MonoBehaviour:
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 0
-      BranchSizes: 07000000
-    VectorActionSize: 07000000
+      BranchSizes: 0e000000
+    VectorActionSize: 0e000000
     VectorActionDescriptions: []
     VectorActionSpaceType: 0
     hasUpgradedBrainParametersWithActionSpec: 1
@@ -335,14 +337,43 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Camera: {fileID: 0}
-  m_SensorName: MonkSensor
+  m_SensorName: HeroSensor
   m_Width: 80
   m_Height: 45
   m_Grayscale: 1
   m_ObservationType: 0
-  m_RuntimeCameraEnable: 0
+  m_RuntimeCameraEnable: 1
   m_ObservationStacks: 4
   m_Compression: 1
+--- !u!114 &6628901482210269431
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1601792176009571056}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e575733e64788c043ac3f25d10174745, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &8538309288791946837
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1601792176009571056}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a355aea5139f66eb4bc74190fd83020a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  agent: {fileID: 1601792176009571056}
+  sensorName: HeroSkillSensor
+  maxRows: 9
+  maxCols: 29
+  observationStacks: 4
 --- !u!1 &4617399148562619489
 GameObject:
   m_ObjectHideFlags: 0
@@ -356,7 +387,7 @@ GameObject:
   - component: {fileID: 5158211783633104074}
   m_Layer: 8
   m_Name: HitPoint
-  m_TagString: Projectile
+  m_TagString: Hit Point
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

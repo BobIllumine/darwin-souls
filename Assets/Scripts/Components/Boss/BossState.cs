@@ -24,7 +24,7 @@ public class BossState : BaseState
 
     public override void ApplyChanges(Stats other)
     {
-        lastImpact = (stats, other);
+        // lastImpact = (stats, other);
         stats = new Stats(other);
     }
 
@@ -44,6 +44,7 @@ public class BossState : BaseState
     {
         // print(stats.HP);
         base.Update();
+        print(stats);
         animResolver.ChangeFloat("attackSpeed", stats.AS);
     }
 
@@ -60,13 +61,14 @@ public class BossState : BaseState
     void Start()
     {
         agent = GetComponent<BossAgent>();
+        movementController = GetComponent<BossMovementController>();
+        actionController = GetComponent<BossActionController>();
+        animResolver = GetComponent<BossAnimResolver>();
     }
 
     void Awake()
     {
-        movementController = GetComponent<BossMovementController>();
-        actionController = GetComponent<BossActionController>();
-        animResolver = GetComponent<BossAnimResolver>();
+        stats = new Stats();
         stats.MaxHP = defaultMaxHP;
         stats.HP = defaultHP;
         stats.AD = defaultAD;
@@ -74,6 +76,6 @@ public class BossState : BaseState
         stats.AS = defaultAS;
         stats.CR = defaultCR;
         stats.status = defaultStatus;
-        lastImpact = (null, stats);
+        // lastImpact = (null, stats);
     }
 }

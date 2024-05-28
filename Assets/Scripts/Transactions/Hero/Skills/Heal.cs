@@ -39,13 +39,17 @@ public class Heal : Action, IBuff, IReward
     public override void Fire(float cr)
     {
         if(!isAvailable)
+        {
+            state.busy = false;
             return;
+        }
         this.cr = cr;
         animResolver.ChangeStatus(status);
         state.ApplyChanges(GetSelfModifiedStats(state));
+        state.busy = false;
         StartCoroutine(StartCooldown(cr));
     }
-    void Start() 
+    void Awake() 
     {
         self_curHP_d = 0;
         self_curHP_mult = 1f;

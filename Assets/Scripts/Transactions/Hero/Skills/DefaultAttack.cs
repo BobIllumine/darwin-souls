@@ -55,7 +55,7 @@ public class DefaultAttack : Action, IEffect, ITarget, IMobility, IReward
     }
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if(other.gameObject.GetComponent<BaseState>() != null)
+        if(other.gameObject.CompareTag("Agent") && other.gameObject.layer == 6 && other.gameObject.name != transform.parent.name)
         {
             targetAnimResolver = other.gameObject.GetComponent<BaseAnimResolver>();
             targetAnimResolver.ChangeStatus(targetStatus);
@@ -63,7 +63,7 @@ public class DefaultAttack : Action, IEffect, ITarget, IMobility, IReward
             agent.AddReward(reward);
         }
     }
-    void Start() 
+    void Awake() 
     {
         curHP_d = 0;
         curHP_mult = 1f;

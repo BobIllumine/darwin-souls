@@ -14,10 +14,11 @@ public class HeroState : BaseState
     [SerializeField] private float defaultAS = 1.0f;
     [SerializeField] private float defaultCR = 0.0f;
     [SerializeField] private Status defaultStatus = Status.OK;
+    public HeroSkillManager skillManager { get; protected set; }
 
     public override void ApplyChanges(Stats other)
     {
-        lastImpact = (new Stats(stats), new Stats(other));
+        // lastImpact = (new Stats(stats), new Stats(other));
         stats = new Stats(other);
     }
 
@@ -50,20 +51,23 @@ public class HeroState : BaseState
         if(stats.HP <= 0)
         {
             agent.AddReward(-stats.MaxHP * 3);
+            skillManager.AddRandomSkill();
             agent.EndEpisode(); 
         }
     }
     void Start()
     {
         agent = GetComponent<HeroAgent>();
+        skillManager = GetComponent<HeroSkillManager>();
+        movementController = GetComponent<HeroMovementController>();
+        actionController = GetComponent<HeroActionController>();
+        animResolver = GetComponent<HeroAnimResolver>();
     }
 
     void Awake()
     {
-        movementController = GetComponent<HeroMovementController>();
-        actionController = GetComponent<HeroActionController>();
-        animResolver = GetComponent<HeroAnimResolver>();
         busy = false;
+        stats = new Stats();
         stats.MaxHP = defaultMaxHP;
         stats.HP = defaultHP;
         stats.AD = defaultAD;
@@ -71,6 +75,6 @@ public class HeroState : BaseState
         stats.AS = defaultAS;
         stats.CR = defaultCR;
         stats.status = defaultStatus;
-        lastImpact = (null, stats);
+        // lastImpact = (null, stats);
     }
 }

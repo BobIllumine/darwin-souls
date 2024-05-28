@@ -15,14 +15,17 @@ public class BossMovementController : BaseMovementController
     private bool isDashing;
     // private BaseAgent agent;
 
-    void Start() 
+    void Start()
     {
         state = GetComponent<BossState>();
         animResolver = GetComponent<BossAnimResolver>();
+        actionController = GetComponent<BossActionController>();
+    }
+    void Awake() 
+    {
         col = GetComponent<BoxCollider2D>();
         body = GetComponent<Rigidbody2D>();
         // agent = GetComponent<BossAgent>();
-        actionController = GetComponent<BossActionController>();
         results = new Collider2D[10];
         filter = new ContactFilter2D();
         filter.SetLayerMask(LayerMask.GetMask("Ground"));

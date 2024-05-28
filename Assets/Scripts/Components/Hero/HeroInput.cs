@@ -7,11 +7,8 @@ using UnityEngine.Analytics;
 
 public class HeroInput : BaseInput
 {
-    void Start()
+    void Awake()
     {
-        actionController = GetComponent<HeroActionController>();
-        movementController = GetComponent<HeroMovementController>();
-        skillManager = GetComponent<HeroSkillManager>();
         
         queue = new LimitedQueue<InputAction>(20);
         buffer = Time.fixedDeltaTime * 10;
@@ -25,7 +22,13 @@ public class HeroInput : BaseInput
             buttons = Mappings.DefaultInputMapP2;
             axis = "Horizontal_P2";
         }
-
+    }
+    void Start()
+    {
+        actionController = GetComponent<HeroActionController>();
+        movementController = GetComponent<HeroMovementController>();
+        skillManager = GetComponent<HeroSkillManager>();
+        
     }
     public override void BufferButton(Button button = Button.NO_ACTION)
     {
@@ -74,6 +77,24 @@ public class HeroInput : BaseInput
                         break;
                     case Button.SKILL_3:
                         actionController.Do(skillManager.GetSkill(2));
+                        break;
+                    case Button.SKILL_4:
+                        actionController.Do(skillManager.GetSkill(3));
+                        break;
+                    case Button.SKILL_5:
+                        actionController.Do(skillManager.GetSkill(4));
+                        break;
+                    case Button.SKILL_6:
+                        actionController.Do(skillManager.GetSkill(5));
+                        break;
+                    case Button.SKILL_7:
+                        actionController.Do(skillManager.GetSkill(6));
+                        break;
+                    case Button.SKILL_8:
+                        actionController.Do(skillManager.GetSkill(7));
+                        break;
+                    case Button.SKILL_9:
+                        actionController.Do(skillManager.GetSkill(8));
                         break;
                     default:
                         break;

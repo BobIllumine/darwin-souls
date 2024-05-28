@@ -9,11 +9,8 @@ using UnityEngine.Analytics;
 // [RequireComponent(typeof(BossActionController))]
 public class BossInput : BaseInput
 {
-    void Start()
+    void Awake()
     {
-        actionController = GetComponent<BossActionController>();
-        movementController = GetComponent<BossMovementController>();
-        skillManager = GetComponent<BossSkillManager>();
         queue = new LimitedQueue<InputAction>(20);
         buffer = Time.fixedDeltaTime * 30;
         if(player == Player.P1)
@@ -26,6 +23,12 @@ public class BossInput : BaseInput
             buttons = Mappings.DefaultInputMapP2;
             axis = "Horizontal_P2";
         }
+    }
+    void Start()
+    {
+        actionController = GetComponent<BossActionController>();
+        movementController = GetComponent<BossMovementController>();
+        skillManager = GetComponent<BossSkillManager>();
     }
     public override void BufferButton(Button button)
     {
@@ -68,6 +71,34 @@ public class BossInput : BaseInput
                     case Button.DEFAULT_ATTACK:
                         actionController.Do("DefaultAttack");
                         break;
+                    case Button.SKILL_1:
+                        actionController.Do(skillManager.GetSkill(0));
+                        break;
+                    case Button.SKILL_2:
+                        actionController.Do(skillManager.GetSkill(1));
+                        break;
+                    case Button.SKILL_3:
+                        actionController.Do(skillManager.GetSkill(2));
+                        break;
+                    case Button.SKILL_4:
+                        actionController.Do(skillManager.GetSkill(3));
+                        break;
+                    case Button.SKILL_5:
+                        actionController.Do(skillManager.GetSkill(4));
+                        break;
+                    case Button.SKILL_6:
+                        actionController.Do(skillManager.GetSkill(5));
+                        break;
+                    case Button.SKILL_7:
+                        actionController.Do(skillManager.GetSkill(6));
+                        break;
+                    case Button.SKILL_8:
+                        actionController.Do(skillManager.GetSkill(7));
+                        break;
+                    case Button.SKILL_9:
+                        actionController.Do(skillManager.GetSkill(8));
+                        break;
+                    
                     default:
                         break;
                 }

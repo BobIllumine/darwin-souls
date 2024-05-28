@@ -75,10 +75,14 @@ public class Fireball : Action, IEffect, IProjectile, ITarget, ITransient, IRewa
             return;
         }
         this.cr = cr;
-        GameObject fireball = Instantiate(projectile, new Vector2(transform.position.x + 1, transform.position.y), Quaternion.Euler(0, 0, -90));
-        fireball.transform.SetParent(transform);
-        FireballProjectile fball_proj = fireball.GetComponent<FireballProjectile>();
-        fball_proj.Initialize(Vector2.right * animResolver.faceTowards, Vector2.right * animResolver.faceTowards * 1000 * Time.fixedDeltaTime);
+        GameObject fireball = Instantiate(projectile, 
+                                        new Vector2(transform.position.x, transform.position.y), 
+                                        Quaternion.Euler(0, animResolver.faceTowards > 0 ? 0 : 180f, 0));
+        FireballProjectile fball_proj = fireball.GetComponent<FireballProjectile>()
+                                                .Initialize(Vector2.right * animResolver.faceTowards, 
+                                                            Vector2.right * animResolver.faceTowards * 2000 * Time.fixedDeltaTime,
+                                                            gameObject) as FireballProjectile;
+        fball_proj.transform.parent = null;
         state.busy = false;
         StartCoroutine(StartCooldown(cr));
     }
@@ -86,7 +90,7 @@ public class Fireball : Action, IEffect, IProjectile, ITarget, ITransient, IRewa
     {
         state.ApplyTimedChanges(GetModifiedStats(state), duration);
     }
-    void Start() 
+    void Awake() 
     {
         curHP_d = 0;
         curHP_mult = 1f;
@@ -100,11 +104,10 @@ public class Fireball : Action, IEffect, IProjectile, ITarget, ITransient, IRewa
         AS_mult = 1f;
         CR_d = 0f;
         CR_mult = 1f;
-        newStatus = Status.STUNNED;
         status = ActionStatus.ATTACK;
         targetStatus = ActionStatus.HURT;
 
-        cooldown = 7;
+        cooldown = 3;
         isAvailable = true;
         
         projectile = Resources.Load<GameObject>("Prefabs/Projectiles/Fireball");
@@ -120,6 +123,7 @@ public class Fireball : Action, IEffect, IProjectile, ITarget, ITransient, IRewa
         agent = obj.GetComponent<BaseAgent>();
         curHP_d = -(int)(state.stats.AD * 0.2f) - 10;
         reward = -curHP_d;
+        newStatus = Status.STUNNED;
         duration = 1;
 
         return this;

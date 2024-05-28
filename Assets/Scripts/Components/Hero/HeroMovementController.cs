@@ -13,16 +13,11 @@ public class HeroMovementController : BaseMovementController
     private float _startScale = 5;
     private float _fallScale = 8;
     private bool isDashing;
-    private BaseAgent agent;
 
-    void Start() 
+    void Awake() 
     {
-        state = GetComponent<HeroState>();
-        animResolver = GetComponent<HeroAnimResolver>();
         col = GetComponent<BoxCollider2D>();
         body = GetComponent<Rigidbody2D>();
-        agent = GetComponent<HeroAgent>();
-        actionController = GetComponent<HeroActionController>();
         results = new Collider2D[10];
         filter = new ContactFilter2D();
         filter.SetLayerMask(LayerMask.GetMask("Ground"));
@@ -31,7 +26,12 @@ public class HeroMovementController : BaseMovementController
         isMovable = true;
         isDashing = false;
     }
-
+    void Start()
+    {
+        state = GetComponent<HeroState>();
+        animResolver = GetComponent<HeroAnimResolver>();
+        actionController = GetComponent<HeroActionController>();
+    }
     public override int[] isMoving() => new int[2] {(Mathf.Abs(body.velocity.x) > 1e-3f ? 1 : 0), (body.velocity.y < -1e-3f ? -1 : (body.velocity.y > 1e-3f ? 1 : 0))};
 
     void Update() 

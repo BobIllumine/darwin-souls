@@ -18,19 +18,20 @@ public class SonicWaveProjectile : BaseProjectile
     }
     void OnCollisionEnter2D(Collision2D other)
     {
-        if(other.gameObject.layer == 6 && other.gameObject.name != transform.parent.gameObject.name) {
+        if(other.gameObject.layer == 6 && other.gameObject.name != parent.name) {
             animResolver.ChangeStatus(ProjectileStatus.HIT);
-            SendMessageUpwards("OnHit", other);
+            parent.GetComponent<SonicWave>().OnHit(other);
             DestroyOnHit();
         }
     }
     void DestroyOnHit() {
         Destroy(gameObject);
     }
-    public override BaseProjectile Initialize(Vector2 direction, Vector2 velocity)
+    public override BaseProjectile Initialize(Vector2 direction, Vector2 velocity, GameObject parent)
     {
         this.direction = direction;
         this.velocity = velocity;
+        this.parent = parent;
         return this;
     }
 

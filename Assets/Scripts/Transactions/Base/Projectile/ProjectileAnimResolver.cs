@@ -58,6 +58,7 @@ public class ProjectileAnimResolver : MonoBehaviour
     }
     public void ChangeFacedDirection(int direction)
     {
+        // transform.Rotate(new Vector3(0, direction > 0 ? 0 : 180f, 0));
         faceTowards = direction;
     }
     void Start()

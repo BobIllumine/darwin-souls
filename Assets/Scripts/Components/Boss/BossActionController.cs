@@ -10,20 +10,23 @@ public class BossActionController : BaseActionController
 {
     void Awake()
     {
-        state = GetComponent<BossState>();
-        animResolver = GetComponent<BossAnimResolver>();
-        movementController = GetComponent<BossMovementController>();
         isActionable = true;
         canAttack = true;
         canCast = true;
 
-        actionSpace = new Dictionary<string, Action>() {
-            ["DefaultAttack"] = gameObject.GetComponentInChildren<DefaultAttack>().Initialize(gameObject),
-        };
+        actionSpace = new Dictionary<string, Action>();
+    }
+
+    void Start()
+    {
+        state = GetComponent<BossState>();
+        animResolver = GetComponent<BossAnimResolver>();
+        movementController = GetComponent<BossMovementController>();
+        actionSpace["DefaultAttack"] = gameObject.GetComponentInChildren<DefaultAttack>().Initialize(gameObject);
     }
     public override void Do(string name)
     {
-        if(!isActionable || (!canCast && name != "DefaultAttack") || (!canAttack && name == "DefaultAttack"))
+        if(!isActionable || (!canCast && name != "DefaultAttack") || (!canAttack && name == "DefaultAttack") || name == "null")
             return;
         try
         {

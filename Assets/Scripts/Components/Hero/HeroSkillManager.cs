@@ -8,8 +8,13 @@ public class HeroSkillManager : BaseSkillManager
 {
     void Awake()
     {
-        actionController = GetComponent<HeroActionController>();
         currentSkills = new List<string>();
+    }
+    void Start()
+    {
+        actionController = GetComponent<HeroActionController>();
+        AddSkill("Fireball");
+        AddSkill("SonicWave");
     }
     
 }

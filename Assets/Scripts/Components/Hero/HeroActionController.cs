@@ -11,20 +11,22 @@ public class HeroActionController : BaseActionController
 {
     void Awake()
     {
-        state = GetComponent<HeroState>();
-        animResolver = GetComponent<HeroAnimResolver>();
-        movementController = GetComponent<HeroMovementController>();
         isActionable = true;
         canAttack = true;
         canCast = true;
 
-        actionSpace = new Dictionary<string, Action>() {
-            ["DefaultAttack"] = gameObject.GetComponentInChildren<DefaultAttack>().Initialize(gameObject),
-        };
+        actionSpace = new Dictionary<string, Action>();
+    }
+    void Start()
+    {
+        state = GetComponent<HeroState>();
+        animResolver = GetComponent<HeroAnimResolver>();
+        movementController = GetComponent<HeroMovementController>();
+        actionSpace["DefaultAttack"] = gameObject.GetComponentInChildren<DefaultAttack>().Initialize(gameObject);
     }
     public override void Do(string name)
     {
-        if(!isActionable || (!canCast && name != "DefaultAttack") || (!canAttack && name == "DefaultAttack"))
+        if(!isActionable || (!canCast && name != "DefaultAttack") || (!canAttack && name == "DefaultAttack") || name == "null")
             return;
         try
         {

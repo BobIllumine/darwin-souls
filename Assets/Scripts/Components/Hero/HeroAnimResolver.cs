@@ -7,7 +7,7 @@ using UnityEngine.Animations;
 public class HeroAnimResolver : BaseAnimResolver
 {
     private Animator animator;
-    void Start()
+    void Awake()
     {
         status = ActionStatus.IDLE;
         animator = GetComponent<Animator>();

@@ -1,37 +1,38 @@
 using UnityEngine;
 using Unity.MLAgents.Sensors;
 using Unity.MLAgents;
+using System;
 
-public class SkillSensor : ISensor
+public class SkillSensor : ISensor, IDisposable
 {
-    private BaseSkillManager skillManager;
-    private float[,] tableData;
-    private string sensorName;
+    public BaseSkillManager skillManager;
+    public float[,] tableData;
+    public string sensorName;
     private int maxCols;
     private int maxRows;
     private ObservationSpec observationSpec;
 
-    public SkillSensor(BaseSkillManager skillManager, string name, int maxRows, int maxCols)
+    public SkillSensor(GameObject agent, string name, int maxRows, int maxCols)
     {
-        this.skillManager = skillManager;
+        this.skillManager = agent.GetComponent<BaseSkillManager>();
         this.maxCols = maxCols;
         this.maxRows = maxRows;
         sensorName = name;
-        tableData = ConstructTable();
-        observationSpec = ObservationSpec.Vector(tableData.Length);
+        tableData = ConstructTable(true);
+        observationSpec = ObservationSpec.Visual(1, this.maxRows, this.maxCols);
     }
 
     public int[] GetObservationShape()
     {
-        return new int[] { tableData.GetLength(0), tableData.GetLength(1) };
+        return new int[] { maxRows, maxCols };
     }
 
     public int Write(ObservationWriter writer)
     {
         int index = 0;
-        for (int i = 0; i < tableData.GetLength(0); i++)
+        for (int i = 0; i < maxRows; i++)
         {
-            for (int j = 0; j < tableData.GetLength(1); j++)
+            for (int j = 0; j < maxCols; j++)
             {
                 writer[index++] = tableData[i, j];
             }
@@ -39,20 +40,22 @@ public class SkillSensor : ISensor
         return index;
     }
 
-    internal float[,] ConstructTable()
+    internal float[,] ConstructTable(bool build_default = false)
     {
         float[,] newData = new float[maxRows, maxCols];
         int currRow = 0;
         foreach((string skill, int index) in Mappings.SkillIndex)
-        {
-            Action act = skillManager.GetActionInstance(skill);
+        {   
+            Action act = null;
             float[] newRow;
+            if(!build_default)
+                act = skillManager is null ? null : skillManager.GetActionInstance(skill);
             
             newRow = (act is null ? Mappings.DefaultSkillRow : act.Serialize());
 
             newRow[0] = index;
             newRow[2] = (Mappings.SkillMap[skill].GetInterface("IMobility") is null ? 0f : 1f);
-            newRow[3] = 0f; // TODO: Do something with buttons please
+            newRow[3] = build_default ? -1f : skillManager.GetSkillIndex(skill);
 
             for(int i = 0; i < newRow.Length; ++i)
             newData[currRow, i] = newRow[i];
@@ -66,15 +69,13 @@ public class SkillSensor : ISensor
     {
         return null;
     }
-
     public void Update()
     {
         tableData = ConstructTable();
     }
 
-    public void Reset()
-    {
-        
+    public void Reset() { 
+        tableData = ConstructTable(true);
     }
 
     public SensorCompressionType GetCompressionType()
@@ -94,5 +95,11 @@ public class SkillSensor : ISensor
     public string GetName()
     {
         return sensorName;
+    }
+
+    public void Dispose()
+    {
+        tableData = null;
+        skillManager = null;
     }
 }

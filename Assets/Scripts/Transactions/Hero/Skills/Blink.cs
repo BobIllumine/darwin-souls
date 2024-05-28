@@ -42,7 +42,7 @@ public class Blink : Action, IMobility
     {
         return;
     }
-    void Start() 
+    void Awake() 
     {
         isAvailable = true;
         status = ActionStatus.RUN;

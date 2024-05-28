@@ -40,13 +40,17 @@ public class Rage : Action, IBuff, ITransient
     public override void Fire(float cr)
     {
         if(!isAvailable)
+        {
+            state.busy = false;
             return;
+        }
         this.cr = cr;
         animResolver.ChangeStatus(status);
         state.ApplyTimedChanges(GetSelfModifiedStats(state), duration);
+        state.busy = false;
         StartCoroutine(StartCooldown(cr));
     }
-    void Start() 
+    void Awake() 
     {
         self_curHP_d = 0;
         self_curHP_mult = 1f;

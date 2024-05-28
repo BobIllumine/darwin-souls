@@ -35,15 +35,15 @@ public abstract class BaseSkillManager : MonoBehaviour
             return "null";
         return currentSkills[index];
     }
+    
+    virtual public int GetSkillIndex(string name) {
+        return currentSkills.IndexOf(name);
+    }
 
     virtual public Action GetActionInstance(string name)
     {
-        try {
-            return actionController.actionSpace[name];
-        } 
-        catch(KeyNotFoundException e)
-        {
-            return null;
-        }
+        Action act;
+        actionController.actionSpace.TryGetValue(name, out act);
+        return act;
     }
 }
