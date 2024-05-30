@@ -58,7 +58,7 @@ public class SkillSensor : ISensor, IDisposable
             newRow[3] = build_default ? -1f : skillManager.GetSkillIndex(skill);
 
             for(int i = 0; i < newRow.Length; ++i)
-            newData[currRow, i] = newRow[i];
+            newData[currRow, i] = newRow[i] / 65535;
 
             ++currRow;
         }

@@ -107,14 +107,14 @@ public class Fireball : Action, IEffect, IProjectile, ITarget, ITransient, IRewa
         status = ActionStatus.ATTACK;
         targetStatus = ActionStatus.HURT;
 
-        cooldown = 3;
+        cooldown = 7;
         isAvailable = true;
         
         projectile = Resources.Load<GameObject>("Prefabs/Projectiles/Fireball");
     }
     void Update() {
         curHP_d = -(int)(state.stats.AD * 0.2f) - 10;
-        reward = -curHP_d;
+        reward = -curHP_d / 100f;
     }
     public override Action Initialize(GameObject obj) 
     {
@@ -122,7 +122,7 @@ public class Fireball : Action, IEffect, IProjectile, ITarget, ITransient, IRewa
         state = obj.GetComponent<BaseState>();
         agent = obj.GetComponent<BaseAgent>();
         curHP_d = -(int)(state.stats.AD * 0.2f) - 10;
-        reward = -curHP_d;
+        reward = -curHP_d / 100f;
         newStatus = Status.STUNNED;
         duration = 1;
 

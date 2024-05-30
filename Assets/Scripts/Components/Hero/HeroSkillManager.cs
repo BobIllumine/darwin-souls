@@ -13,8 +13,6 @@ public class HeroSkillManager : BaseSkillManager
     void Start()
     {
         actionController = GetComponent<HeroActionController>();
-        AddSkill("Fireball");
-        AddSkill("SonicWave");
     }
     
 }

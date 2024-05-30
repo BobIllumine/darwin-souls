@@ -9,31 +9,10 @@ from torch.nn.utils import clip_grad_norm_
 from model import DQN
 from scheduler import EnsembleCosineAnnealingLR
 
-class DQNPolicy():
-    def __init__(self, net, support, action_space):
-        self.net = net
-        self.support = support
-        self.action_space = action_space
-    
-    def act(self, state):
-        with torch.no_grad():
-            return (self.net(state.unsqueeze(0)) * self.support).sum(2).argmax(1).item()
-
-    # Acts with an ε-greedy policy (used for evaluation only)
-    def act_e_greedy(self, state, epsilon=0.001):  # High ε can reduce evaluation scores drastically
-        return np.random.randint(0, self.action_space) if np.random.random() < epsilon else self.act(state)
-
-    def __call__(self, state, epsilon=-1):
-        # if epsilon == -1:
-            # return self.act(state)
-        # else:
-            # return self.act_e_greedy(state, epsilon)
-        return self.net(state.unsqueeze(0)) * self.support
-        
 
 class Agent():
-    def __init__(self, args, env):
-        self.action_space = env.action_space(env.agent_selection).n
+    def __init__(self, args, env, agent):
+        self.action_space = env.action_spaces[agent].n
         self.atoms = args['atoms']
         self.Vmin = args['V_min']
         self.Vmax = args['V_max']
@@ -66,18 +45,18 @@ class Agent():
         self.optimiser = optim.Adam(self.online_net.parameters(), lr=args['learning_rate'], eps=args['adam_eps'])
         self.scheduler = EnsembleCosineAnnealingLR(self.optimiser, args['learning_rate'], args['T_max'], args['num_ensemble'])
 
-    def loss(self, states, actions, returns, next_states, nonterminals):
+    def loss(self, idxs, states, skills, actions, returns, next_states, next_skills, nonterminals, weights):
         # Calculate current state probabilities (online network noise already sampled)
-        log_ps = self.online_net(states, log=True)  # Log probabilities log p(s_t, ·; θonline)
+        log_ps = self.online_net(states, skills, log=True)  # Log probabilities log p(s_t, ·; θonline)
         log_ps_a = log_ps[range(self.batch_size), actions]  # log p(s_t, a_t; θonline)
 
         with torch.no_grad():
             # Calculate nth next state probabilities
-            pns = self.online_net(next_states)  # Probabilities p(s_t+n, ·; θonline)
+            pns = self.online_net(next_states, next_skills)  # Probabilities p(s_t+n, ·; θonline)
             dns = self.support.expand_as(pns) * pns  # Distribution d_t+n = (z, p(s_t+n, ·; θonline))
             argmax_indices_ns = dns.sum(2).argmax(1)  # Perform argmax action selection using online network: argmax_a[(z, p(s_t+n, a; θonline))]
             self.target_net.reset_noise()  # Sample new target net noise
-            pns = self.target_net(next_states)  # Probabilities p(s_t+n, ·; θtarget)
+            pns = self.target_net(next_states, next_skills)  # Probabilities p(s_t+n, ·; θtarget)
             pns_a = pns[range(self.batch_size), argmax_indices_ns]  # Double-Q probabilities p(s_t+n, argmax_a[(z, p(s_t+n, a; θonline))]; θtarget)
 
             # Compute Tz (Bellman operator T applied to z)
@@ -92,10 +71,12 @@ class Agent():
 
             # Distribute probability of Tz
             m = states.new_zeros(self.batch_size, self.atoms)
+         
             offset = torch.linspace(0, ((self.batch_size - 1) * self.atoms), self.batch_size).unsqueeze(1).expand(self.batch_size, self.atoms).to(actions)
+         
             m.view(-1).index_add_(0, (l + offset).view(-1), (pns_a * (u.float() - b)).view(-1))  # m_l = m_l + p(s_t+n, a*)(u - b)
             m.view(-1).index_add_(0, (u + offset).view(-1), (pns_a * (b - l.float())).view(-1))  # m_u = m_u + p(s_t+n, a*)(b - l)
-        
+
         return -torch.sum(m * log_ps_a, 1), log_ps 
 
     # Resets noisy weights in all linear layers (of online net only)
@@ -103,26 +84,26 @@ class Agent():
         self.online_net.reset_noise()
 
     # Acts based on single state (no batch)
-    def act(self, state):
+    def act(self, state, skill):
         with torch.no_grad():
-            return (self.online_net(state.unsqueeze(0)) * self.support).sum(2).argmax(1).item()
+            return (self.online_net(state.unsqueeze(0), skill.unsqueeze(0)) * self.support).sum(2).argmax(1).item()
         
     # Acts with an ε-greedy policy (used for evaluation only)
-    def act_e_greedy(self, state, epsilon=0.001):  # High ε can reduce evaluation scores drastically
-        return np.random.randint(0, self.action_space) if np.random.random() < epsilon else self.act(state)
+    def act_e_greedy(self, state, skill, epsilon=0.001):  # High ε can reduce evaluation scores drastically
+        return np.random.randint(0, self.action_space) if np.random.random() < epsilon else self.act(state, skill)
     
     def learn(self, mem):
         # Sample transitions
-        idxs, states, actions, returns, next_states, nonterminals, weights = mem.sample(self.batch_size)
-
-        loss = self.loss(states, actions, returns, next_states, nonterminals)  # Cross-entropy loss (minimises DKL(m||p(s_t, a_t)))
+        batch = mem.sample(self.batch_size)
+        idxs, states, skills, actions, returns, next_states, next_skills, nonterminals, weights = batch
+        loss = self.loss(idxs, states, skills, actions, returns, next_states, next_skills, nonterminals, weights)  # Cross-entropy loss (minimises DKL(m||p(s_t, a_t)))
         self.online_net.zero_grad()
         (weights * loss[0]).mean().backward()  # Backpropagate importance-weighted minibatch loss
         self.optimiser.step()
         self.scheduler.step()
 
         mem.update_priorities(idxs, loss[0].detach().cpu().numpy())  # Update priorities of sampled transitions
-        return loss, states
+        return loss, batch
         
     def update_target_net(self):
         self.target_net.load_state_dict(self.online_net.state_dict())
@@ -132,16 +113,18 @@ class Agent():
         torch.save(self.online_net.state_dict(), os.path.join(path, name))
 
     # Evaluates Q-value based on single state (no batch)
-    def evaluate_q(self, state):
+    def evaluate_q(self, state, skill):
         with torch.no_grad():
-            return (self.online_net(state.unsqueeze(0)) * self.support).sum(2).max(1)[0].item()
+            return (self.online_net(state.unsqueeze(0), skill.unsqueeze(0)) * self.support).sum(2).max(1)[0].item()
+        
+    def __call__(self, state, skill):
+        if len(state.shape) != 4:
+            return self.online_net(state.unsqueeze(0), skill.unsqueeze(0)) * self.support
+        else:
+            return self.online_net(state, skill) * self.support
 
     def train(self):
         self.online_net.train()
 
     def eval(self):
         self.online_net.eval()
-
-    @property
-    def policy(self):
-        return DQNPolicy(self.online_net, self.action_space, self.support)

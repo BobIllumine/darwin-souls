@@ -73,7 +73,7 @@ public class Heal : Action, IBuff, IReward
     void Update() 
     {
         self_curHP_d = (int)(state.stats.MaxHP * 0.1f);
-        reward = self_curHP_d;
+        reward = self_curHP_d / 100f;
     }
 
     public override Action Initialize(GameObject obj) 
@@ -82,7 +82,7 @@ public class Heal : Action, IBuff, IReward
         state = obj.GetComponent<BaseState>();
         agent = obj.GetComponent<BaseAgent>();
         self_curHP_d = (int)(state.stats.MaxHP * 0.1f);
-        reward = self_curHP_d;
+        reward = self_curHP_d / 100f;
         return this;
     }
 

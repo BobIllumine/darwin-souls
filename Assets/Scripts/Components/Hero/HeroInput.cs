@@ -7,9 +7,9 @@ using UnityEngine.Analytics;
 
 public class HeroInput : BaseInput
 {
+    public HeroAgent agent { get; private set; }
     void Awake()
     {
-        
         queue = new LimitedQueue<InputAction>(20);
         buffer = Time.fixedDeltaTime * 10;
         if(player == Player.P1)
@@ -28,7 +28,7 @@ public class HeroInput : BaseInput
         actionController = GetComponent<HeroActionController>();
         movementController = GetComponent<HeroMovementController>();
         skillManager = GetComponent<HeroSkillManager>();
-        
+        agent = GetComponent<HeroAgent>();
     }
     public override void BufferButton(Button button = Button.NO_ACTION)
     {
@@ -61,42 +61,91 @@ public class HeroInput : BaseInput
                 return;
             if(lastAction.Validate())
             {
+                string skill = "";
                 switch(lastAction.button)
                 {
                     case Button.JUMP:
                         movementController.Jump();
+                        agent.AddReward(0.02f);
                         break;
                     case Button.DEFAULT_ATTACK:
                         actionController.Do("DefaultAttack");
+                        agent.AddReward(0.02f);
                         break;
                     case Button.SKILL_1:
-                        actionController.Do(skillManager.GetSkill(0));
+                        skill = skillManager.GetSkill(0);
+                        if(skill != "null")
+                        {
+                            actionController.Do(skill);
+                            agent.AddReward(0.01f);
+                        }
                         break;
                     case Button.SKILL_2:
-                        actionController.Do(skillManager.GetSkill(1));
+                        skill = skillManager.GetSkill(1);
+                        if(skill != "null")
+                        {
+                            actionController.Do(skill);
+                            agent.AddReward(0.01f);
+                        }
                         break;
                     case Button.SKILL_3:
-                        actionController.Do(skillManager.GetSkill(2));
+                        skill = skillManager.GetSkill(2);
+                        if(skill != "null")
+                        {
+                            actionController.Do(skill);
+                            agent.AddReward(0.01f);
+                        }
                         break;
                     case Button.SKILL_4:
-                        actionController.Do(skillManager.GetSkill(3));
+                        skill = skillManager.GetSkill(3);
+                        if(skill != "null")
+                        {
+                            actionController.Do(skill);
+                            agent.AddReward(0.01f);
+                        }
                         break;
                     case Button.SKILL_5:
-                        actionController.Do(skillManager.GetSkill(4));
+                        skill = skillManager.GetSkill(4);
+                        if(skill != "null")
+                        {
+                            actionController.Do(skill);
+                            agent.AddReward(0.01f);
+                        }
                         break;
                     case Button.SKILL_6:
-                        actionController.Do(skillManager.GetSkill(5));
+                        skill = skillManager.GetSkill(5);
+                        if(skill != "null")
+                        {
+                            actionController.Do(skill);
+                            agent.AddReward(0.01f);
+                        }
                         break;
                     case Button.SKILL_7:
-                        actionController.Do(skillManager.GetSkill(6));
+                        skill = skillManager.GetSkill(6);
+                        if(skill != "null")
+                        {
+                            actionController.Do(skill);
+                            agent.AddReward(0.01f);
+                        }
                         break;
                     case Button.SKILL_8:
-                        actionController.Do(skillManager.GetSkill(7));
+                        skill = skillManager.GetSkill(7);
+                        if(skill != "null")
+                        {
+                            actionController.Do(skill);
+                            agent.AddReward(0.01f);
+                        }
                         break;
                     case Button.SKILL_9:
-                        actionController.Do(skillManager.GetSkill(8));
+                        skill = skillManager.GetSkill(8);
+                        if(skill != "null")
+                        {
+                            actionController.Do(skill);
+                            agent.AddReward(0.01f);
+                        }
                         break;
                     default:
+                        skill = "";
                         break;
                 }
                 break;

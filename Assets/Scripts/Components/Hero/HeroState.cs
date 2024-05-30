@@ -50,7 +50,7 @@ public class HeroState : BaseState
         base.OnDeath();
         if(stats.HP <= 0)
         {
-            agent.AddReward(-stats.MaxHP * 3);
+            agent.SetReward(-2 * stats.MaxHP / 100f);
             skillManager.AddRandomSkill();
             agent.EndEpisode(); 
         }

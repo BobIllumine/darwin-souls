@@ -87,24 +87,6 @@ public static class Mappings
         ["PoisonCloud"] = 8
     };
 
-    public static Dictionary<string, int> SkillTableLayout = new Dictionary<string, int>() {
-        ["idx"] = 0,
-        ["button"] = 1,
-        ["ready"] = 2,
-        ["mobility"] = 4,
-        [""] = 5,
-        [""] = 6,
-        [""] = 7,
-        [""] = 8,
-        [""] = 9,
-        [""] = 10,
-        [""] = 11,
-        [""] = 12,
-        [""] = 13,
-        [""] = 14,
-        [""] = 15,
-    };
-
     public static float[] DefaultSkillRow = new float[29] {
         0f, // idx
         0f, // ready

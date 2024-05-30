@@ -79,35 +79,52 @@ public class BossAgent : BaseAgent
         {
             case 1: 
                 movementController.Move(-1);
-                AddReward(0.01f);
+                AddReward(0.03f);
                 break;
             case 2:
                 movementController.Move(1);
-                AddReward(0.01f);
+                AddReward(0.03f);
                 break;
             case 3:
                 input.BufferButton(Button.JUMP);
-                AddReward(0.01f);
                 break;
             case 4:
                 input.BufferButton(Button.DEFAULT_ATTACK);
-                AddReward(0.02f);
                 break;
             case 5:
                 input.BufferButton(Button.SKILL_1);
-                AddReward(0.03f);
                 break;
             case 6:
                 input.BufferButton(Button.SKILL_2);
-                AddReward(0.03f);
+                break;
+            case 7:
+                input.BufferButton(Button.SKILL_3);
+                break;
+            case 8:
+                input.BufferButton(Button.SKILL_4);
+                break;
+            case 9:
+                input.BufferButton(Button.SKILL_5);
+                break;
+            case 10:
+                input.BufferButton(Button.SKILL_6);
+                break;
+            case 11:
+                input.BufferButton(Button.SKILL_7);
+                break;
+            case 12:
+                input.BufferButton(Button.SKILL_8);
+                break;
+            case 13:
+                input.BufferButton(Button.SKILL_9);
                 break;
             default:
-                // AddReward(-0.01f);
+                AddReward(-0.01f);
                 break;
         }
         if(oppState.stats.HP == 0)
         {
-            AddReward(oppState.stats.MaxHP * 2);
+            AddReward(oppState.stats.MaxHP / 200f);
             EndEpisode(); 
         }
         // print($"Opp HP: {oppState.stats.HP}/{oppState.stats.MaxHP}");

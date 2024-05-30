@@ -25,7 +25,7 @@ def test(env: UnityAECEnv, args, T, dqn, val_mem, metrics, results_dir, evaluate
                 state = torch.Tensor(state['observation'][0] if isinstance(state, dict) else state).to(args['device'])
                 reward_sum = 0
                 done = False
-            action = dqn.act_e_greedy(state)  # Choose an action ε-greedily
+            action = dqn.act_e_greedy(state) # Choose an action ε-greedily
             env.step(action)
             state, reward, done, _ = env.last()  # Step
             state = torch.Tensor(state['observation'][0] if isinstance(state, dict) else state).to(args['device'])
@@ -35,7 +35,8 @@ def test(env: UnityAECEnv, args, T, dqn, val_mem, metrics, results_dir, evaluate
             if done:
                 T_rewards.append(reward_sum)
                 break
-    env.close()
+    # env.close()
+    env.reset()
 
     # Test Q-values over validation memory
     for state in val_mem:  # Iterate over valid states
@@ -60,10 +61,10 @@ def test(env: UnityAECEnv, args, T, dqn, val_mem, metrics, results_dir, evaluate
     # Return average reward and Q-value
     return avg_reward, avg_Q
 
-def ensemble_test(env: UnityAECEnv, args, T, dqn, val_mem, metrics, results_dir, num_ensemble, evaluate=False):
-    metrics['steps'].append(T)
+def ensemble_test(env: UnityAECEnv, agent, args, T, dqn, val_mem, metrics, results_dir, num_ensemble, evaluate=False):
+    metrics[agent]['steps'].append(T)
     T_rewards, T_Qs = [], []
-    action_space = env.action_space(env.agent_selection).n
+    action_space = env.action_spaces[agent].n
         
     # Test performance over several episodes
     done = True
@@ -72,49 +73,53 @@ def ensemble_test(env: UnityAECEnv, args, T, dqn, val_mem, metrics, results_dir,
             if done:
                 env.reset()
                 state, reward_sum, done, _ = env.last()
-                state = torch.Tensor(state['observation'][0] if isinstance(state, dict) else state).to(args['device'])
+                (state, skill) = state['observation'] if isinstance(state, dict) else state
+                state = torch.Tensor(state).to(args['device'])
+                skill = torch.Tensor(skill).to(args['device'])
                 reward_sum = 0
                 done = False
             q_tot = 0
+            vote = { action: 0 for action in range(action_space)}
             for en_index in range(num_ensemble):
-                if en_index == 0:
-                    q_tot = dqn[en_index].ensemble_q(state)
-                else:
-                    q_tot += dqn[en_index].ensemble_q(state)
-            action = q_tot.argmax(1).item()
+                vote[dqn[en_index].act(state, skill)] += 1
+
+            action = max(vote, key=vote.get)
                     
             env.step(action)
             state, reward, done, _ = env.last()  # Step
-            state = torch.Tensor(state['observation'][0] if isinstance(state, dict) else state).to(args['device'])
+            (state, skill) = state['observation'] if isinstance(state, dict) else state
+            state = torch.Tensor(state).to(args['device'])
+            skill = torch.Tensor(skill).to(args['device'])
             reward_sum += reward
-            if args['render']:
-                env.render()
+            # if args['rsender']:
+                # env.render()
             if done:
                 T_rewards.append(reward_sum)
                 break
-    env.close()
+    # env.close()
+    env.reset()
 
     # Test Q-values over validation memory
-    for state in val_mem:  # Iterate over valid states
+    for state, skill in val_mem:  # Iterate over valid states
         for en_index in range(num_ensemble):
-            T_Qs.append(dqn[en_index].evaluate_q(state))
+            T_Qs.append(dqn[en_index].evaluate_q(state, skill))
             
     avg_reward, avg_Q = sum(T_rewards) / len(T_rewards), sum(T_Qs) / len(T_Qs)
     if not evaluate:
         # Save model parameters if improved
-        if avg_reward > metrics['best_avg_reward']:
-            metrics['best_avg_reward'] = avg_reward
+        if avg_reward > metrics[agent]['best_avg_reward']:
+            metrics[agent]['best_avg_reward'] = avg_reward
             for en_index in range(num_ensemble):
-                dqn[en_index].save(results_dir, name='%dth_model.pth'%(en_index))
+                dqn[en_index].save(results_dir, name=f'{agent}_{en_index}_th_model_gen_{T}.pth')
                 
-        # Append to results and save metrics
-        metrics['rewards'].append(T_rewards)
-        metrics['Qs'].append(T_Qs)
+        # Append to results and save metrics[agent]
+        metrics[agent]['rewards'].append(T_rewards)
+        metrics[agent]['Qs'].append(T_Qs)
         
-        torch.save(metrics, os.path.join(results_dir, 'metrics.pth'))
+        torch.save(metrics[agent], os.path.join(results_dir, 'metrics.pth'))
         # Plot
-        _plot_line(metrics['steps'], metrics['rewards'], 'Reward', path=results_dir)
-        _plot_line(metrics['steps'], metrics['Qs'], 'Q', path=results_dir)
+        _plot_line(metrics[agent]['steps'], metrics[agent]['rewards'], f'{agent}_Reward', path=results_dir)
+        _plot_line(metrics[agent]['steps'], metrics[agent]['Qs'], f'{agent}_Q', path=results_dir)
             
     # Return average reward and Q-value
     return avg_reward, avg_Q

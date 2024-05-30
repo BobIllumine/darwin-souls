@@ -125,7 +125,7 @@ public class VampireSlash : Action, IEffect, ITarget, IBuff, IReward
         self_CR_mult = 1f;
         self_newStatus = null;
 
-        cooldown = 3;
+        cooldown = 5;
         isAvailable = true;
 
         status = ActionStatus.ATTACK;
@@ -135,7 +135,7 @@ public class VampireSlash : Action, IEffect, ITarget, IBuff, IReward
     {
         curHP_d = -state.stats.AD;
         self_curHP_d = state.stats.AD;
-        reward = -curHP_d + self_curHP_d;
+        reward = (-curHP_d + self_curHP_d) / 100f;
     }
     public override Action Initialize(GameObject obj) 
     {
@@ -144,7 +144,7 @@ public class VampireSlash : Action, IEffect, ITarget, IBuff, IReward
         agent = obj.GetComponent<BaseAgent>();
         curHP_d = -state.stats.AD;
         self_curHP_d = state.stats.AD;
-        reward = -curHP_d + self_curHP_d;
+        reward = (-curHP_d + self_curHP_d) / 100f;
         return this;
     }
 

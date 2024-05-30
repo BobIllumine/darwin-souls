@@ -366,6 +366,10 @@ PrefabInstance:
       propertyPath: opponent
       value: 
       objectReference: {fileID: 1828023353}
+    - target: {fileID: 8538309288791946837, guid: 3ec7f2e4fc62a59a99e4d0e511001121, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -550,7 +554,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1055551366
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -782,6 +786,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2024391174904507568, guid: 7d621645b8305565488c99861f56f18b, type: 3}
+      propertyPath: defaultMS
+      value: 800
+      objectReference: {fileID: 0}
+    - target: {fileID: 2193448454290394726, guid: 7d621645b8305565488c99861f56f18b, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3433956807928830647, guid: 7d621645b8305565488c99861f56f18b, type: 3}
       propertyPath: m_Name
       value: Enemy

@@ -85,7 +85,7 @@ public class DefaultAttack : Action, IEffect, ITarget, IMobility, IReward
     void Update() 
     {
         curHP_d = -state.stats.AD;
-        reward = -curHP_d;
+        reward = -curHP_d / 100f;
     }
     public override Action Initialize(GameObject obj) 
     {
@@ -94,7 +94,7 @@ public class DefaultAttack : Action, IEffect, ITarget, IMobility, IReward
         state = obj.GetComponent<BaseState>();
         agent = obj.GetComponent<BaseAgent>();
         curHP_d = -state.stats.AD;
-        reward = -curHP_d;
+        reward = -curHP_d / 100f;
         return this;
     }
 

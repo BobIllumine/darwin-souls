@@ -12,7 +12,7 @@ import torch
 import datetime
 import pickle
 import bz2
-from tqdm import trange
+from tqdm import trange, tqdm
 import argparse
 import cvxpy as cp
 
@@ -26,17 +26,22 @@ env = UnityEnvironment(file_name='./Build/darwin_souls_sensor.x86_64', no_graphi
 aec = UnityAECEnv(env)
 
 aec.reset()
-
-for agent in aec.agent_iter(aec.num_agents * 10):
-    prev_observe, reward, done, info = aec.last()
-    if isinstance(prev_observe, dict) and 'action_mask' in prev_observe:
-        action_mask = prev_observe['action_mask']
-    if done:
-        action = None
-    else:
-        action = aec.action_spaces[agent].sample() # randomly choose an action for example
-    print(agent)
-    aec.step(action)
+with tqdm(aec.agent_iter(aec.num_agents * 10), postfix={'agent':'initial'}) as iter:
+    for agent in iter:
+        prev_observe, reward, done, info = aec.last()
+        print(info)
+        if isinstance(prev_observe, dict) and 'action_mask' in prev_observe:
+            action_mask = prev_observe['action_mask']
+            (state, skill) = prev_observe['observation']
+        else:
+            (state, skill) = prev_observe
+        if done:
+            action = None
+        else:
+            action = aec.action_spaces[agent].sample() # randomly choose an action for example
+        print(agent, aec.agent_selection)
+        aec.step(action)
+        iter.set_postfix(agent=f'{agent}')
 # # Note that hyperparameters may originally be reported in ATARI game frames instead of agent steps
 # parser = argparse.ArgumentParser(description='Encoder')
 # parser.add_argument('--id', type=str, default='encoder', help='Experiment ID')

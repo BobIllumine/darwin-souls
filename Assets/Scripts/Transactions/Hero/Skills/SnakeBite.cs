@@ -98,7 +98,7 @@ public class SnakeBite : Action, IEffect, ITarget, IMobility, IPeriodic, IReward
     void Update() 
     {
         curHP_d = -state.stats.AD;
-        reward = -curHP_d * (perDuration / period);
+        reward = -curHP_d * (perDuration / period) / 100f;
     }
     public override Action Initialize(GameObject obj) 
     {
@@ -107,7 +107,7 @@ public class SnakeBite : Action, IEffect, ITarget, IMobility, IPeriodic, IReward
         state = obj.GetComponent<BaseState>();
         agent = obj.GetComponent<BaseAgent>();
         curHP_d = -state.stats.AD;
-        reward = -curHP_d * (perDuration / period);
+        reward = -curHP_d * (perDuration / period) / 100f;
         return this;
     }
 

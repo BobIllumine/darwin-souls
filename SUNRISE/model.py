@@ -44,14 +44,36 @@ class NoisyLinear(nn.Module):
             return F.linear(input, self.weight_mu + self.weight_sigma * self.weight_epsilon, self.bias_mu + self.bias_sigma * self.bias_epsilon)
         else:
             return F.linear(input, self.weight_mu, self.bias_mu)
+        
+class Encoder(nn.Module):
+    def __init__(self):
+        super(Encoder, self).__init__()
+        
+        # Encoder with modified output to (1, 192)
+        self.encoder = nn.Sequential(
+            nn.Linear(4 * 9 * 29, 128),  # Input layer to hidden layer
+            nn.ReLU(True),
+            nn.Linear(128, 192)      # Hidden layer to desired output size
+        )
 
+    def forward(self, x):
+        x = self.encoder(x)
+        return x
+    
+    def save_model(self, path):
+        torch.save(self.state_dict(), path)
+        print(f"Model saved to {path}")
+
+    def load_model(self, path):
+        self.load_state_dict(torch.load(path))
+        print(f"Model loaded from {path}")
 
 class DQN(nn.Module):
     def __init__(self, args, action_space):
         super(DQN, self).__init__()
         self.atoms = args['atoms']
         self.action_space = action_space
-
+        self.encoder = Encoder()
         if args['architecture'] == 'canonical':
             self.convs = nn.Sequential(nn.Conv2d(args['history_length'], 32, 8, stride=4, padding=0), nn.ReLU(),
                                     nn.Conv2d(32, 64, 4, stride=2, padding=0), nn.ReLU(),
@@ -60,15 +82,18 @@ class DQN(nn.Module):
         elif args['architecture'] == 'data-efficient':
             self.convs = nn.Sequential(nn.Conv2d(args['history_length'], 32, 5, stride=5, padding=0), nn.ReLU(),
                                     nn.Conv2d(32, 64, 5, stride=5, padding=0), nn.ReLU())
-            self.conv_output_size = 192
+            self.conv_output_size = 192 * 2
         self.fc_h_v = NoisyLinear(self.conv_output_size, args['hidden_size'], std_init=args['noisy_std'])
         self.fc_h_a = NoisyLinear(self.conv_output_size, args['hidden_size'], std_init=args['noisy_std'])
         self.fc_z_v = NoisyLinear(args['hidden_size'], self.atoms, std_init=args['noisy_std'])
         self.fc_z_a = NoisyLinear(args['hidden_size'], action_space * self.atoms, std_init=args['noisy_std'])
 
-    def forward(self, x, log=False):
+    def forward(self, x, y, log=False):
         x = self.convs(x)
-        x = x.view(-1, self.conv_output_size)
+        x = x.view(-1, self.conv_output_size // 2)
+        y = y.flatten(start_dim=1)
+        y = self.encoder(y)
+        x = torch.cat((x, y), dim=1)
         v = self.fc_z_v(F.relu(self.fc_h_v(x)))  # Value stream
         a = self.fc_z_a(F.relu(self.fc_h_a(x)))  # Advantage stream
         v, a = v.view(-1, 1, self.atoms), a.view(-1, self.action_space, self.atoms)

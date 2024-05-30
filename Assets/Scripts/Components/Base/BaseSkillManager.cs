@@ -30,6 +30,18 @@ public abstract class BaseSkillManager : MonoBehaviour
         currentSkills.Add(name);
     }
 
+    virtual public void RemoveSkill(string name) {
+        if(currentSkills.Contains(name))
+            currentSkills.Remove(name);
+        actionController.RemoveAction(name);
+    }
+
+    virtual public void RemoveAll()
+    {
+        foreach(var skill in currentSkills)
+            actionController.RemoveAction(skill);
+        currentSkills.Clear();
+    }
     virtual public string GetSkill(int index) {
         if(index < 0 || index >= currentSkills.Count)
             return "null";

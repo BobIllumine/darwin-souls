@@ -107,14 +107,14 @@ public class SonicWave : Action, IEffect, IProjectile, ITarget, ITransient, IRew
         status = ActionStatus.ATTACK;
         targetStatus = ActionStatus.HURT;
 
-        cooldown = 3;
+        cooldown = 15;
         isAvailable = true;
         
         projectile = Resources.Load<GameObject>("Prefabs/Projectiles/Sonic Wave");
     }
     void Update() {
         curHP_d = -(int)(state.stats.AD * 0.2f) - 10;
-        reward = -curHP_d;
+        reward = -curHP_d / 100f;
     }
     public override Action Initialize(GameObject obj) 
     {
@@ -122,7 +122,7 @@ public class SonicWave : Action, IEffect, IProjectile, ITarget, ITransient, IRew
         state = obj.GetComponent<BaseState>();
         agent = obj.GetComponent<BaseAgent>();
         curHP_d = -(int)(state.stats.AD * 0.2f) - 10;
-        reward = -curHP_d;
+        reward = -curHP_d / 100f;
         duration = 3;
         newStatus = Status.STUNNED;
         return this;

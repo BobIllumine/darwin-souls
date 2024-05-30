@@ -44,7 +44,6 @@ public class BossState : BaseState
     {
         // print(stats.HP);
         base.Update();
-        print(stats);
         animResolver.ChangeFloat("attackSpeed", stats.AS);
     }
 
@@ -54,7 +53,7 @@ public class BossState : BaseState
         if(stats.HP <= 0)
         {
             // Destroy(gameObject);
-            agent.AddReward(stats.MaxHP * 3);
+            agent.SetReward(-2 * stats.MaxHP / 100f);
             agent.EndEpisode(); 
         }
     }
