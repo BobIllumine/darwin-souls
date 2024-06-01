@@ -53,8 +53,8 @@ public class BossState : BaseState
         if(stats.HP <= 0)
         {
             // Destroy(gameObject);
-            agent.SetReward(-2 * stats.MaxHP / 100f);
-            agent.EndEpisode(); 
+            agent.AddReward(-stats.MaxHP / 100f);
+            SendMessageUpwards("OnAgentDeath");
         }
     }
     void Start()

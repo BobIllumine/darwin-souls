@@ -18,7 +18,6 @@ public class GameManager : MonoBehaviour
         agents = GameObject.FindGameObjectsWithTag("Agent");
         foreach(var agent in agents) 
         {
-            // print(agent.transform.position);
             positions[agent.name] = agent.transform.position;
             rotations[agent.name] = agent.transform.rotation;
             stats[agent.name] = agent.GetComponent<BaseState>().stats;

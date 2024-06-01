@@ -56,15 +56,15 @@ def construct_val_mem(aec, args):
             aec.reset()
             state, _, _, _ = aec.last()
             (state, skill) = state['observation'] if isinstance(state, dict) else state
-            state = torch.Tensor(state).to(args['device'])
-            skill = torch.Tensor(skill).to(args['device'])
+            state = torch.Tensor(state).to(args['device']).flip(0)
+            skill = torch.Tensor(skill).to(args['device']).flip(0)
             done = False
             
         aec.step(np.random.randint(0, aec.action_space(aec.agent_selection).n))
         next_state, _, done, _ = aec.last()
         (next_state, next_skill) = next_state['observation'] if isinstance(next_state, dict) else next_state
-        next_state = torch.Tensor(next_state).to(args['device'])
-        next_skill = torch.Tensor(next_skill).to(args['device'])
+        next_state = torch.Tensor(next_state).to(args['device']).flip(0)
+        next_skill = torch.Tensor(next_skill).to(args['device']).flip(0)
         val_mem[agent].append(state, skill, None, None, done)
         state = next_state
         skill = next_skill
@@ -96,7 +96,7 @@ def start(aec, args):
             raise ValueError('Cannot resume training without memory save path. Aborting...')
         elif not os.path.exists(args['memory']):
             raise ValueError('Could not find memory file at {path}. Aborting...'.format(path=args['memory']))
-        mem = load_memory(args['memory'], args['disable_bzip_memory'])
+        mem = { agent: load_memory(args['memory'], args['disable_bzip_memory']) for agent in aec.agents }
     else:
         mem = { agent : ReplayMemory(args, args['memory_capacity'], args['beta_mean'], args['num_ensemble']) for agent in aec.agents }
 
@@ -121,14 +121,14 @@ def start(aec, args):
         T, done = { agent: 0 for agent in aec.agents }, True
         selected_en_index = np.random.randint(args['num_ensemble'])
         prev_agent = None
-        with tqdm(aec.agent_iter(aec.num_agents * args['T_max']), postfix={'prev_agent': 'initial', 'T' : 0}) as iter:
+        with tqdm(aec.agent_iter(int(aec.num_agents * args['T_max'] * 1.2)), postfix={'prev_agent': 'initial', 'T' : 0}) as iter:
             for agent in iter:
                 if done:
                     aec.reset()
                     (state, _, _, info), done = aec.last(), False
                     (state, skill) = state['observation'] if isinstance(state, dict) else state
-                    state = torch.Tensor(state).to(args['device'])
-                    skill = torch.Tensor(skill).to(args['device'])
+                    state = torch.Tensor(state).to(args['device']).flip(0)
+                    skill = torch.Tensor(skill).to(args['device']).flip(0)
                     prev_agent = agent
                     selected_en_index = np.random.randint(args['num_ensemble'])
 
@@ -165,8 +165,8 @@ def start(aec, args):
                 aec.step(action)
                 next_state, reward, done, info = aec.last()
                 (next_state, next_skill) = next_state['observation'] if isinstance(next_state, dict) else next_state
-                next_state = torch.Tensor(next_state).to(args['device']) # Step
-                next_skill = torch.Tensor(next_skill).to(args['device']) # Step
+                next_state = torch.Tensor(next_state).to(args['device']).flip(0) # Step
+                next_skill = torch.Tensor(next_skill).to(args['device']).flip(0) # Step
 
                 if args['reward_clip'] > 0:
                     reward = max(min(reward, args['reward_clip']), -args['reward_clip'])  # Clip rewards
@@ -215,17 +215,15 @@ def start(aec, args):
                                 q_loss_tot += q_loss
                         q_loss_tot = q_loss_tot / args['num_ensemble']
 
-                        if np.all(q_loss_tot == 0):
-                            print("motherfu")
                         # Update priorities of sampled transitions
                         mem[prev_agent].update_priorities(idxs, q_loss_tot)
                         
-                    if T[prev_agent] % args['evaluation_interval'] == 0:
+                    if T[prev_agent] % args['evaluation_interval'] == 0 and T[prev_agent] != args['learn_start']:
                         for en_index in range(args['num_ensemble']):
                             dqn_list[prev_agent][en_index].eval()  # Set DQN (online network) to evaluation mode
                         avg_reward, avg_Q = ensemble_test(aec, prev_agent, args, T[prev_agent], dqn_list[prev_agent], val_mem[prev_agent], metrics, results_dir, 
                                                         num_ensemble=args['num_ensemble'])  # Test
-                        log(f'T[{prev_agent}] = ' + str(T[prev_agent]) + ' / ' + str(args['T_max']) + ' | Avg. reward: ' + str(avg_reward) + ' | Avg. Q: ' + str(avg_Q))
+                        log(f'T[{prev_agent.split("?")[0]}] = ' + str(T[prev_agent]) + ' / ' + str(args['T_max']) + ' | Avg. reward: ' + str(avg_reward) + ' | Avg. Q: ' + str(avg_Q))
                         for en_index in range(args['num_ensemble']):
                             dqn_list[prev_agent][en_index].train()  # Set DQN (online network) back to training mode
 
@@ -241,11 +239,18 @@ def start(aec, args):
                     # Checkpoint the network
                     if (args['checkpoint_interval'] != 0) and T[prev_agent] % args['checkpoint_interval'] == 0:
                         for en_index in range(args['num_ensemble']):
-                            dqn_list[prev_agent][en_index].save(results_dir, f'{prev_agent}_{en_index}_checkpoint.pth')
+                            dqn_list[prev_agent][en_index].save(results_dir, f'{prev_agent.split("?")[0]}_{en_index}_checkpoint.pth')
                             
                 state = next_state
                 skill = next_skill
                 T[prev_agent] += 1
                 prev_agent = agent
+
+                count = 0
+                for i in aec.agents:
+                    if T[i] >= args['T_max']:
+                        count += 1
+                if count == aec.num_agents:
+                    break
 
     aec.close()

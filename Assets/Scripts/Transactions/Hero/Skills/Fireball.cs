@@ -113,7 +113,7 @@ public class Fireball : Action, IEffect, IProjectile, ITarget, ITransient, IRewa
         projectile = Resources.Load<GameObject>("Prefabs/Projectiles/Fireball");
     }
     void Update() {
-        curHP_d = -(int)(state.stats.AD * 0.2f) - 10;
+        curHP_d = -(int)(state.stats.AD * 1.1f) - 10;
         reward = -curHP_d / 100f;
     }
     public override Action Initialize(GameObject obj) 
@@ -121,7 +121,7 @@ public class Fireball : Action, IEffect, IProjectile, ITarget, ITransient, IRewa
         animResolver = obj.GetComponent<BaseAnimResolver>();
         state = obj.GetComponent<BaseState>();
         agent = obj.GetComponent<BaseAgent>();
-        curHP_d = -(int)(state.stats.AD * 0.2f) - 10;
+        curHP_d = -(int)(state.stats.AD * 1.1f) - 10;
         reward = -curHP_d / 100f;
         newStatus = Status.STUNNED;
         duration = 1;

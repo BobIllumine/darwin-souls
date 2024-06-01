@@ -6,7 +6,6 @@ import torch
 from torch import optim
 
 from model import DQN
-from scheduler import EnsembleCosineAnnealingLR
 
 
 class Agent():
@@ -42,7 +41,6 @@ class Agent():
             param.requires_grad = False
 
         self.optimiser = optim.Adam(self.online_net.parameters(), lr=args['learning_rate'], eps=args['adam_eps'])
-        self.scheduler = EnsembleCosineAnnealingLR(self.optimiser, args['learning_rate'], args['T_max'], args['num_ensemble'])
 
     def loss(self, idxs, states, skills, actions, returns, next_states, next_skills, nonterminals, weights):
         # Calculate current state probabilities (online network noise already sampled)
@@ -99,7 +97,6 @@ class Agent():
         self.online_net.zero_grad()
         (weights * loss[0]).mean().backward()  # Backpropagate importance-weighted minibatch loss
         self.optimiser.step()
-        self.scheduler.step()
 
         mem.update_priorities(idxs, loss[0].detach().cpu().numpy())  # Update priorities of sampled transitions
         return loss, batch

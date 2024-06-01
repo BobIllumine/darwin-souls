@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
+from collections import defaultdict
 import os
 import plotly
 from mlagents_envs.envs.unity_aec_env import UnityAECEnv
@@ -64,7 +65,6 @@ def test(env: UnityAECEnv, args, T, dqn, val_mem, metrics, results_dir, evaluate
 def ensemble_test(env: UnityAECEnv, agent, args, T, dqn, val_mem, metrics, results_dir, num_ensemble, evaluate=False):
     metrics[agent]['steps'].append(T)
     T_rewards, T_Qs = [], []
-        
     # Test performance over several episodes
     done = True
     for _ in range(args['evaluation_episodes']):
@@ -93,8 +93,8 @@ def ensemble_test(env: UnityAECEnv, agent, args, T, dqn, val_mem, metrics, resul
             reward_sum += reward
             # if args['rsender']:
                 # env.render()
+            T_rewards.append(reward_sum)
             if done:
-                T_rewards.append(reward_sum)
                 break
     # env.close()
     env.reset()
@@ -105,21 +105,29 @@ def ensemble_test(env: UnityAECEnv, agent, args, T, dqn, val_mem, metrics, resul
             T_Qs.append(dqn[en_index].evaluate_q(state, skill))
             
     avg_reward, avg_Q = sum(T_rewards) / len(T_rewards), sum(T_Qs) / len(T_Qs)
+    name_agent = agent.split('?')[0]
     if not evaluate:
         # Save model parameters if improved
         if avg_reward > metrics[agent]['best_avg_reward']:
             metrics[agent]['best_avg_reward'] = avg_reward
             for en_index in range(num_ensemble):
-                dqn[en_index].save(results_dir, name=f'{agent}_{en_index}_th_model.pth')
+                dqn[en_index].save(results_dir, name=f'{name_agent}_{en_index}_model_gen_{T}.pth')
                 
-        # Append to results and save metrics[agent]
+        # Append to results and save metrics
+        longest = 0
+        for i in metrics[agent]['rewards']:
+            longest = len(i) if len(i) > longest else longest
+
+        while len(T_rewards) < longest:
+            T_rewards.append(torch.inf)
+
         metrics[agent]['rewards'].append(T_rewards)
         metrics[agent]['Qs'].append(T_Qs)
         
-        torch.save(metrics[agent], os.path.join(results_dir, 'metrics.pth'))
+        torch.save(metrics[agent], os.path.join(results_dir, f'{name_agent}_metrics.pth'))
         # Plot
-        _plot_line(metrics[agent]['steps'], metrics[agent]['rewards'], f'{agent}_Reward', path=results_dir)
-        _plot_line(metrics[agent]['steps'], metrics[agent]['Qs'], f'{agent}_Q', path=results_dir)
+        _plot_line(metrics[agent]['steps'], metrics[agent]['rewards'], f'{name_agent}_Reward', path=results_dir)
+        _plot_line(metrics[agent]['steps'], metrics[agent]['Qs'], f'{name_agent}_Q', path=results_dir)
             
     # Return average reward and Q-value
     return avg_reward, avg_Q
@@ -130,9 +138,11 @@ def _plot_line(xs, ys_population, title, path=''):
     max_colour, mean_colour, std_colour, transparent = 'rgb(0, 132, 180)', 'rgb(0, 172, 237)', 'rgba(29, 202, 255, 0.2)', 'rgba(0, 0, 0, 0)'
 
     ys = torch.tensor(ys_population, dtype=torch.float32)
+    ys = ys[ys != float(torch.inf)].reshape(len(xs), -1)
     ys_min, ys_max, ys_mean, ys_std = ys.min(1)[0].squeeze(), ys.max(1)[0].squeeze(), ys.mean(1).squeeze(), ys.std(1).squeeze()
     ys_upper, ys_lower = ys_mean + ys_std, ys_mean - ys_std
 
+    print(ys_max.shape)
     trace_max = Scatter(x=xs, y=ys_max.numpy(), line=Line(color=max_colour, dash='dash'), name='Max')
     trace_upper = Scatter(x=xs, y=ys_upper.numpy(), line=Line(color=transparent), name='+1 Std. Dev.', showlegend=False)
     trace_mean = Scatter(x=xs, y=ys_mean.numpy(), fill='tonexty', fillcolor=std_colour, line=Line(color=mean_colour), name='Mean')

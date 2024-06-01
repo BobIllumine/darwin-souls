@@ -38,7 +38,6 @@ public abstract class BaseState : MonoBehaviour
     
     public virtual void OnDeath() 
     {
-        // print("im ded");
         animResolver.ChangeStatus(ActionStatus.DIE);
     }
     public virtual void Update() 

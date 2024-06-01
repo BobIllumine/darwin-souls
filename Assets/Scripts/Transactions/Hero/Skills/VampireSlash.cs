@@ -133,8 +133,8 @@ public class VampireSlash : Action, IEffect, ITarget, IBuff, IReward
     }
     void Update() 
     {
-        curHP_d = -state.stats.AD;
-        self_curHP_d = state.stats.AD;
+        curHP_d = (int)(-state.stats.AD * 1.2f);
+        self_curHP_d = (int)(curHP_d * 0.8f);
         reward = (-curHP_d + self_curHP_d) / 100f;
     }
     public override Action Initialize(GameObject obj) 
@@ -142,8 +142,8 @@ public class VampireSlash : Action, IEffect, ITarget, IBuff, IReward
         animResolver = obj.GetComponent<BaseAnimResolver>();
         state = obj.GetComponent<BaseState>();
         agent = obj.GetComponent<BaseAgent>();
-        curHP_d = -state.stats.AD;
-        self_curHP_d = state.stats.AD;
+        curHP_d = (int)(-state.stats.AD * 1.2f);
+        self_curHP_d = (int)(curHP_d * 0.8f);
         reward = (-curHP_d + self_curHP_d) / 100f;
         return this;
     }

@@ -13,31 +13,18 @@ public class BossAgent : BaseAgent
 {
     private BossState state;
     private BaseState oppState;
-    private BaseMovementController oppMovementController;
-    private Vector3 oppInitialPos;
-    private Quaternion oppInitialRot;
-    private Stats oppInitialStats;
-
     private GameObject gameManager;
 
     public override void ResetParameters()
     {
         movementController = GetComponent<BossMovementController>();
-        oppMovementController = opponent.GetComponent<BaseMovementController>();
-
         gameManager = GameObject.FindGameObjectsWithTag("GameController")[0];
         
         initialPos = gameManager.GetComponent<GameManager>().GetInitialPosition(gameObject.name);
         initialStats = gameManager.GetComponent<GameManager>().GetInitialStats(gameObject.name);
         
-        oppInitialPos = gameManager.GetComponent<GameManager>().GetInitialPosition(oppState.gameObject.name);
-        oppInitialStats = gameManager.GetComponent<GameManager>().GetInitialStats(oppState.gameObject.name);
-
-
         movementController.Teleport(initialPos);
-        oppMovementController.Teleport(oppInitialPos);
         state.ApplyChanges(initialStats);
-        oppState.ApplyChanges(oppInitialStats);
     }
     protected void Start()
     {        
@@ -46,44 +33,30 @@ public class BossAgent : BaseAgent
         input = GetComponent<BaseInput>();
         actionController = GetComponent<HeroActionController>();
         movementController = GetComponent<HeroMovementController>();
-        oppMovementController = opponent.GetComponent<BaseMovementController>();
     }
-    // protected override void OnEnable()
-    // {
-    //     base.OnEnable();
-    //     // initialPos = transform.position;
-    //     // initialRot = transform.rotation;
-    //     // oppInitialPos = oppState.transform.position;
-    //     // oppInitialRot = oppState.transform.rotation;
-    //     // initialStats = new Stats(state.stats);
-    //     // oppInitialStats = new Stats(oppState.stats);
-    // }
 
     public override void OnEpisodeBegin()
     {
+        print($"Episode: {CompletedEpisodes}");
         ResetParameters();
-        // print($"Reward: {GetCumulativeReward()}");
     }
 
     public override void CollectObservations(VectorSensor sensor)
-    {
-        // sensor.AddObservation(new List<float>() { oppState.stats.HP, oppState.stats.MS, oppState.stats.AD, oppState.stats.AS });
-        // sensor.AddObservation(new List<float>() { state.stats.HP, state.stats.MS, state.stats.AD, state.stats.AS });
-    }
+    { }
 
     public override void OnActionReceived(ActionBuffers actions)
     {
-        // print(actions.ContinuousActions[0]);
+        if(StepCount == MaxStep)
+            SendMessageUpwards("OnMaxStep");
+
         int move = actions.DiscreteActions[0];
         switch(move)
         {
             case 1: 
                 movementController.Move(-1);
-                AddReward(0.03f);
                 break;
             case 2:
                 movementController.Move(1);
-                AddReward(0.03f);
                 break;
             case 3:
                 input.BufferButton(Button.JUMP);
@@ -122,9 +95,9 @@ public class BossAgent : BaseAgent
                 AddReward(-0.01f);
                 break;
         }
-        if(oppState.stats.HP == 0)
+        if(oppState.stats.HP <= 0)
         {
-            AddReward(oppState.stats.MaxHP / 200f);
+            AddReward(oppState.stats.MaxHP / 100f);
             EndEpisode(); 
         }
         // print($"Opp HP: {oppState.stats.HP}/{oppState.stats.MaxHP}");

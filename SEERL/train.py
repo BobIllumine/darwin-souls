@@ -86,15 +86,15 @@ def construct_val_mem(aec, args):
             aec.reset()
             state, _, _, _ = aec.last()
             (state, skill) = state['observation'] if isinstance(state, dict) else state
-            state = torch.Tensor(state).to(args['device'])
-            skill = torch.Tensor(skill).to(args['device'])
+            state = torch.Tensor(state).to(args['device']).flip(0)
+            skill = torch.Tensor(skill).to(args['device']).flip(0)
             done = False
             
         aec.step(np.random.randint(0, aec.action_space(aec.agent_selection).n))
         next_state, _, done, _ = aec.last()
         (next_state, next_skill) = next_state['observation'] if isinstance(next_state, dict) else next_state
-        next_state = torch.Tensor(next_state).to(args['device'])
-        next_skill = torch.Tensor(next_skill).to(args['device'])
+        next_state = torch.Tensor(next_state).to(args['device']).flip(0)
+        next_skill = torch.Tensor(next_skill).to(args['device']).flip(0)
         val_mem[agent].append(state, skill, None, None, done)
         state = next_state
         skill = next_skill
@@ -125,7 +125,7 @@ def start(aec, args):
             raise ValueError('Cannot resume training without memory save path. Aborting...')
         elif not os.path.exists(args['memory']):
             raise ValueError('Could not find memory file at {path}. Aborting...'.format(path=args['memory']))
-        mem = load_memory(args['memory'], args['disable_bzip_memory'])
+        mem = { agent : load_memory(args['memory'], args['disable_bzip_memory']) for agent in aec.agents }
     else:
         mem = { agent : ReplayMemory(args, args['memory_capacity']) for agent in aec.agents }
 
@@ -150,18 +150,18 @@ def start(aec, args):
         T, done = { agent: 0 for agent in aec.agents }, True
         selected_en_index = np.random.randint(args['num_ensemble'])
         prev_agent = None
-        with tqdm(aec.agent_iter(aec.num_agents * args['T_max']), postfix={'prev_agent': 'initial', 'T' : 0}) as iter:
+        with tqdm(aec.agent_iter(int(aec.num_agents * args['T_max'] * 1.2)), postfix={'prev_agent': 'initial', 'T' : 0}) as iter:
             for agent in iter:
                 if done:
                     aec.reset()
                     (state, _, _, info), done = aec.last(), False
                     (state, skill) = state['observation'] if isinstance(state, dict) else state
-                    state = torch.Tensor(state).to(args['device'])
-                    skill = torch.Tensor(skill).to(args['device'])
+                    state = torch.Tensor(state).to(args['device']).flip(0)
+                    skill = torch.Tensor(skill).to(args['device']).flip(0)
                     prev_agent = agent
                     selected_en_index = np.random.randint(args['num_ensemble'])
 
-                iter.set_postfix(prev_agent=prev_agent, T=T[prev_agent])
+                iter.set_postfix(prev_agent=prev_agent.split('?')[0], T=T[prev_agent])
                 if T[prev_agent] % args['replay_frequency'] == 0:
                     for en_index in range(args['num_ensemble']):
                         dqn_list[prev_agent][en_index].reset_noise()  # Draw a new set of noisy weights
@@ -170,8 +170,8 @@ def start(aec, args):
                 aec.step(action)
                 next_state, reward, done, info = aec.last()
                 (next_state, next_skill) = next_state['observation'] if isinstance(next_state, dict) else next_state
-                next_state = torch.Tensor(next_state).to(args['device']) # Step
-                next_skill = torch.Tensor(next_skill).to(args['device']) # Step
+                next_state = torch.Tensor(next_state).to(args['device']).flip(0) # Step
+                next_skill = torch.Tensor(next_skill).to(args['device']).flip(0) # Step
 
                 if args['reward_clip'] > 0:
                     reward = max(min(reward, args['reward_clip']), -args['reward_clip'])  # Clip rewards
@@ -190,7 +190,7 @@ def start(aec, args):
                             policy_list[prev_agent].append(copy.deepcopy(dqn_list[prev_agent][selected_en_index]))
                             # print(len(policy_list), len(ps_list), len(state_list), len(loss_list))
                         
-                    if T[prev_agent] % args['evaluation_interval'] == 0:
+                    if T[prev_agent] % args['evaluation_interval'] == 0 and T[prev_agent] != args['learn_start']:
                         # TODO: Optimization framework here
                         for policy in policy_list[prev_agent]:
                             policy.eval()
@@ -219,11 +219,11 @@ def start(aec, args):
                             for j in range(num_policies):
                                 B_matrix[i, j] = (probabilities * B[i] * B[j]).sum()
                         # Ensure B_matrix is symmetric
-                        # B_matrix = (B_matrix + B_matrix.T) / 2
+                        B_matrix = (B_matrix + B_matrix.T) / 2
 
-                        # # Add a small positive value to the diagonal elements to ensure positive semi-definiteness
-                        # epsilon = 1e-6
-                        # B_matrix += epsilon * np.eye(num_policies)
+                        # Add a small positive value to the diagonal elements to ensure positive semi-definiteness
+                        epsilon = 1e-5
+                        B_matrix += epsilon * np.eye(num_policies)
 
                         # Define the optimization variables
                         w = cp.Variable(num_policies)
@@ -241,7 +241,7 @@ def start(aec, args):
                         for policy in selection:
                             policy.eval()  # Set DQN (online network) to evaluation mode
                         avg_reward, avg_Q = ensemble_test(aec, prev_agent, args, T[prev_agent], selection, val_mem[prev_agent], metrics, results_dir, args['num_ensemble'])  # Test
-                        log_str = f"T = {T[prev_agent]}/{args['T_max']} | Avg. reward: {avg_reward} | Avg. Q: {avg_Q} | Agent: {prev_agent}"
+                        log_str = f"T = {T[prev_agent]}/{args['T_max']} | Avg. reward: {avg_reward} | Avg. Q: {avg_Q} | Agent: {prev_agent.split('?')[0]}"
                         log(log_str)
                         
                         for en_index in range(args['num_ensemble']):
@@ -265,11 +265,18 @@ def start(aec, args):
 
                     # Checkpoint the network
                     if (args['checkpoint_interval'] != 0) and (T[prev_agent] % args['checkpoint_interval'] == 0):
-                        dqn_list[prev_agent][selected_en_index].save(results_dir, f'{prev_agent}_{selected_en_index}_checkpoint.pth')
+                        dqn_list[prev_agent][selected_en_index].save(results_dir, f'{prev_agent.split("?")[0]}_{selected_en_index}_checkpoint.pth')
 
                 state = next_state
                 skill = next_skill
                 T[prev_agent] += 1
                 prev_agent = agent
+
+                count = 0
+                for i in aec.agents:
+                    if T[i] >= args['T_max']:
+                        count += 1
+                if count == aec.num_agents:
+                    break
 
     aec.close()

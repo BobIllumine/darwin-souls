@@ -46,7 +46,7 @@ public class Blink : Action, IMobility
     {
         isAvailable = true;
         status = ActionStatus.RUN;
-        cooldown = 2;
+        cooldown = 5;
     }
     public override Action Initialize(GameObject obj) 
     {

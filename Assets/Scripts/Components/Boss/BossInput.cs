@@ -70,18 +70,18 @@ public class BossInput : BaseInput
                 {
                     case Button.JUMP:
                         movementController.Jump();
-                        agent.AddReward(0.02f);
+                        // agent.AddReward(0.02f);
                         break;
                     case Button.DEFAULT_ATTACK:
                         actionController.Do("DefaultAttack");
-                        agent.AddReward(0.02f);
+                        // agent.AddReward(0.02f);
                         break;
                     case Button.SKILL_1:
                         skill = skillManager.GetSkill(0);
                         if(skill != "null")
                         {
                             actionController.Do(skill);
-                            agent.AddReward(0.01f);
+                            // agent.AddReward(0.01f);
                         }
                         break;
                     case Button.SKILL_2:
@@ -89,7 +89,7 @@ public class BossInput : BaseInput
                         if(skill != "null")
                         {
                             actionController.Do(skill);
-                            agent.AddReward(0.01f);
+                            // agent.AddReward(0.01f);
                         }
                         break;
                     case Button.SKILL_3:
@@ -97,7 +97,7 @@ public class BossInput : BaseInput
                         if(skill != "null")
                         {
                             actionController.Do(skill);
-                            agent.AddReward(0.01f);
+                            // agent.AddReward(0.01f);
                         }
                         break;
                     case Button.SKILL_4:
@@ -105,7 +105,7 @@ public class BossInput : BaseInput
                         if(skill != "null")
                         {
                             actionController.Do(skill);
-                            agent.AddReward(0.01f);
+                            // agent.AddReward(0.01f);
                         }
                         break;
                     case Button.SKILL_5:
@@ -113,7 +113,7 @@ public class BossInput : BaseInput
                         if(skill != "null")
                         {
                             actionController.Do(skill);
-                            agent.AddReward(0.01f);
+                            // agent.AddReward(0.01f);
                         }
                         break;
                     case Button.SKILL_6:
@@ -121,7 +121,7 @@ public class BossInput : BaseInput
                         if(skill != "null")
                         {
                             actionController.Do(skill);
-                            agent.AddReward(0.01f);
+                            // agent.AddReward(0.01f);
                         }
                         break;
                     case Button.SKILL_7:
@@ -129,7 +129,7 @@ public class BossInput : BaseInput
                         if(skill != "null")
                         {
                             actionController.Do(skill);
-                            agent.AddReward(0.01f);
+                            // agent.AddReward(0.01f);
                         }
                         break;
                     case Button.SKILL_8:
@@ -137,7 +137,7 @@ public class BossInput : BaseInput
                         if(skill != "null")
                         {
                             actionController.Do(skill);
-                            agent.AddReward(0.01f);
+                            // agent.AddReward(0.01f);
                         }
                         break;
                     case Button.SKILL_9:
@@ -145,7 +145,7 @@ public class BossInput : BaseInput
                         if(skill != "null")
                         {
                             actionController.Do(skill);
-                            agent.AddReward(0.01f);
+                            // agent.AddReward(0.01f);
                         }
                         break;
                     default:
