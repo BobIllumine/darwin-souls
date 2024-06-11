@@ -1,2 +1,0 @@
-[mlagents.trainer_type]
-dqn = rainbow.DQN_trainer:get_type_and_setting

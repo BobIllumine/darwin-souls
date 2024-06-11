@@ -23,8 +23,11 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/Forest.unity
     guid: 836dc45c515de00eb8b66c1947ddea99
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Minimalistic.unity
     guid: 6fb8281916089b642bfab88d475725b1
+  - enabled: 1
+    path: Assets/Scenes/Training.unity
+    guid: 726ae65216ff741c5baec558b4e650f1
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: 6287f54fdac714b4e96c1a6454e6b3b3, type: 2}

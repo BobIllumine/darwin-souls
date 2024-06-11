@@ -6,7 +6,8 @@ TagManager:
   tags:
   - Agent
   - Projectile
-  - Enemy
+  - Deadzone
+  - Hit Point
   layers:
   - Default
   - TransparentFX

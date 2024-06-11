@@ -22,17 +22,13 @@ public class AerialBehaviour : StateMachineBehaviour
     // OnStateUpdate is called on each Update frame between OnStateEnter and OnStateExit callbacks
     override public void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
-        Stats newStats = state.stats;
-        newStats.status = Status.STUNNED;
-        state.ApplyChanges(newStats);
+        state.busy = true;
     }
 
     // OnStateExit is called when a transition ends and the state machine finishes evaluating this state
     override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
-        Stats newStats = state.stats;
-        newStats.status = Status.OK;
-        state.ApplyChanges(newStats);
+        state.busy = false;
     }
 
     // OnStateMove is called right after Animator.OnAnimatorMove()

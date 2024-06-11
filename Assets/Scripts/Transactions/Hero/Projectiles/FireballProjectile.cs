@@ -10,26 +10,26 @@ public class FireballProjectile : BaseProjectile
     {
         body = GetComponent<Rigidbody2D>();
         animResolver = GetComponent<ProjectileAnimResolver>();
-        animResolver.AnimateTrigger(ProjectileStatus.CAST);
+        animResolver.ChangeStatus(ProjectileStatus.CAST);
     }
     void FixedUpdate() {
         body.velocity = velocity;    
     }
     void OnCollisionEnter2D(Collision2D other) {
-        animResolver.AnimateTrigger(ProjectileStatus.HIT);
-        if((transform.parent.gameObject.CompareTag("Player") && other.gameObject.CompareTag("Enemy")) 
-        || transform.parent.gameObject.CompareTag("Enemy") && other.gameObject.CompareTag("Player")) {
-            SendMessageUpwards("OnHit", other);
+        if(other.gameObject.name != parent.name && other.gameObject.layer == 6) {
+            animResolver.ChangeStatus(ProjectileStatus.HIT);
+            parent.GetComponent<Fireball>().OnHit(other);
+            DestroyOnHit();
         }
-        DestroyOnHit();
     }
     void DestroyOnHit() {
         Destroy(gameObject);
     }
-    public override BaseProjectile Initialize(Vector2 direction, Vector2 velocity)
+    public override BaseProjectile Initialize(Vector2 direction, Vector2 velocity, GameObject parent)
     {
         this.direction = direction;
         this.velocity = velocity;
+        this.parent = parent;
         return this;
     }
 

@@ -4,19 +4,19 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
-public class Stomp : Action, IMobility, IStateDependent
+public class Stomp : Action, IMobility
 {
-    public BaseState state { get; protected set; }
     public BaseMovementController movementController { get; protected set; }
     // Action
     public override void Fire(float cr)
     {
         if(!isAvailable)
+        {
+            state.busy = false;
             return;
+        }
             
-        PropertyInfo ms = state.GetType().GetProperty("MS");
-
-        Stats newStats = state.stats;
+        Stats newStats = new Stats(state.stats);
         newStats.MS *= 10;
         state.ApplyChanges(newStats);
 
@@ -25,16 +25,16 @@ public class Stomp : Action, IMobility, IStateDependent
         
         animResolver.ChangeStatus(status);
         
-        newStats.MS *= 10;
+        newStats.MS /= 10;
         state.ApplyChanges(newStats);
-
+        state.busy = false;
         StartCoroutine(StartCooldown(cr));
     }
     public override void UseOnState(BaseState state, float cr)
     {
         return;
     }
-    void Start() 
+    void Awake() 
     {
         isAvailable = true;
         status = ActionStatus.FALL;
@@ -46,5 +46,12 @@ public class Stomp : Action, IMobility, IStateDependent
         animResolver = obj.GetComponent<BaseAnimResolver>();
         state = obj.GetComponent<BaseState>();
         return this;
+    }
+
+    public override float[] Serialize()
+    {
+        float[] row = Mappings.DefaultSkillRow;
+        row[1] = (isAvailable ? 1f : 0f);
+        return row; 
     }
 }

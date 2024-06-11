@@ -15,10 +15,7 @@ public interface IProjectile
     public void OnHit(Collision2D other);
 }
 
-public interface IStateDependent
-{
-    public BaseState state { get; }
-}
+
 
 public interface IMobility
 {

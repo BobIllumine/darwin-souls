@@ -7,12 +7,10 @@ using UnityEngine.Animations;
 public class HeroAnimResolver : BaseAnimResolver
 {
     private Animator animator;
-    private HeroMovementController movementController;
-    void Start()
+    void Awake()
     {
         status = ActionStatus.IDLE;
         animator = GetComponent<Animator>();
-        movementController = GetComponent<HeroMovementController>();
         faceTowards = 1;
     }
     

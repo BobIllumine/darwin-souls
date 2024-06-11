@@ -18,4 +18,9 @@ public abstract class BaseActionController : MonoBehaviour
     {
         actionSpace.Add(name, action);
     }
+    public virtual void RemoveAction(string name)
+    {
+        if(actionSpace.ContainsKey(name))
+            actionSpace.Remove(name);
+    }
 }

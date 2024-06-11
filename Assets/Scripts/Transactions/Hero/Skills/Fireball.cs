@@ -7,12 +7,13 @@ using Unity.VisualScripting;
 using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine;
 
-public class Fireball : Action, IEffect, IProjectile, ITarget, IStateDependent, ITransient
+public class Fireball : Action, IEffect, IProjectile, ITarget, ITransient, IReward
 {
+    public BaseAgent agent { get; protected set; }
+    public float reward { get; protected set; }
     // ITransient
     public float duration { get; protected set; }
     // IStateDependent
-    public BaseState state { get; protected set; }
     // IEffect
     public int maxHP_d { get; protected set; }
     public float maxHP_mult { get; protected set; }
@@ -39,7 +40,7 @@ public class Fireball : Action, IEffect, IProjectile, ITarget, IStateDependent, 
             
         // }
         // return stats;
-        Stats newStats = state.stats;
+        Stats newStats = new Stats(state.stats);
 
         newStats.MaxHP = (int)(maxHP_mult * newStats.MaxHP + maxHP_d);
         newStats.HP = (int)(curHP_mult * newStats.HP + curHP_d);
@@ -63,24 +64,33 @@ public class Fireball : Action, IEffect, IProjectile, ITarget, IStateDependent, 
             targetAnimResolver = other.gameObject.GetComponent<BaseAnimResolver>();
             targetAnimResolver.ChangeStatus(targetStatus);
             UseOnState(other.gameObject.GetComponent<BaseState>(), cr);
+            agent.AddReward(reward);
         }
     }
     public override void Fire(float cr)
     {
         if(!isAvailable)
+        {
+            state.busy = false;
             return;
+        }
         this.cr = cr;
-        GameObject fireball = Instantiate(projectile, new Vector2(transform.position.x + 1, transform.position.y), Quaternion.Euler(0, 0, -90));
-        fireball.transform.SetParent(transform);
-        FireballProjectile fball_proj = fireball.GetComponent<FireballProjectile>();
-        fball_proj.Initialize(Vector2.right * animResolver.faceTowards, Vector2.right * animResolver.faceTowards * 1000 * Time.fixedDeltaTime);
+        GameObject fireball = Instantiate(projectile, 
+                                        new Vector2(transform.position.x, transform.position.y), 
+                                        Quaternion.Euler(0, animResolver.faceTowards > 0 ? 0 : 180f, 0));
+        FireballProjectile fball_proj = fireball.GetComponent<FireballProjectile>()
+                                                .Initialize(Vector2.right * animResolver.faceTowards, 
+                                                            Vector2.right * animResolver.faceTowards * 2000 * Time.fixedDeltaTime,
+                                                            gameObject) as FireballProjectile;
+        fball_proj.transform.parent = null;
+        state.busy = false;
         StartCoroutine(StartCooldown(cr));
     }
     public override void UseOnState(BaseState state, float cr)
     {
         state.ApplyTimedChanges(GetModifiedStats(state), duration);
     }
-    void Start() 
+    void Awake() 
     {
         curHP_d = 0;
         curHP_mult = 1f;
@@ -94,7 +104,6 @@ public class Fireball : Action, IEffect, IProjectile, ITarget, IStateDependent, 
         AS_mult = 1f;
         CR_d = 0f;
         CR_mult = 1f;
-        newStatus = Status.STUNNED;
         status = ActionStatus.ATTACK;
         targetStatus = ActionStatus.HURT;
 
@@ -104,14 +113,40 @@ public class Fireball : Action, IEffect, IProjectile, ITarget, IStateDependent, 
         projectile = Resources.Load<GameObject>("Prefabs/Projectiles/Fireball");
     }
     void Update() {
-        curHP_d = -(int)(state.stats.AD * 0.2f) - 10;
+        curHP_d = -(int)(state.stats.AD * 1.1f) - 10;
+        reward = -curHP_d / 100f;
     }
     public override Action Initialize(GameObject obj) 
     {
         animResolver = obj.GetComponent<BaseAnimResolver>();
         state = obj.GetComponent<BaseState>();
-        curHP_d = -(int)(state.stats.AD * 0.2f) - 10;
+        agent = obj.GetComponent<BaseAgent>();
+        curHP_d = -(int)(state.stats.AD * 1.1f) - 10;
+        reward = -curHP_d / 100f;
+        newStatus = Status.STUNNED;
         duration = 1;
+
         return this;
     }
+
+    public override float[] Serialize()
+    {
+        float[] row = Mappings.DefaultSkillRow;
+        row[1] = (isAvailable ? 1f : 0f);
+        row[4] = curHP_d;
+        row[5] = curHP_mult;
+        row[6] = maxHP_d;
+        row[7] = maxHP_mult;
+        row[8] = AD_d;
+        row[9] = AD_mult;
+        row[10] = MS_d;
+        row[11] = MS_mult;
+        row[12] = AS_d;
+        row[13] = AS_mult;
+        row[14] = CR_d;
+        row[15] = CR_mult;
+        row[16] = (float)(int)newStatus;
+        return row; 
+    }
 }
+

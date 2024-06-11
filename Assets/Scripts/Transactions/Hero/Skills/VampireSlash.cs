@@ -4,11 +4,10 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
-public class VampireSlash : Action, IEffect, ITarget, IStateDependent, IBuff
+public class VampireSlash : Action, IEffect, ITarget, IBuff, IReward
 {
-    public BaseState state { get; protected set; }
-    protected Dictionary<string, Func<object, object>> _statChangeMapping;
-    protected Dictionary<string, Func<object, object>> _selfStatChangeMapping;
+    public BaseAgent agent { get; protected set; }
+    public float reward { get; protected set; }
     // IEffect
     public int maxHP_d { get; protected set; }
     public float maxHP_mult { get; protected set; }
@@ -25,7 +24,7 @@ public class VampireSlash : Action, IEffect, ITarget, IStateDependent, IBuff
     public Status? newStatus { get; protected set; }
     public Stats GetModifiedStats(BaseState state)
     {
-        Stats newStats = state.stats;
+        Stats newStats = new Stats(state.stats);
 
         newStats.MaxHP = (int)(maxHP_mult * newStats.MaxHP + maxHP_d);
         newStats.HP = (int)(curHP_mult * newStats.HP + curHP_d);
@@ -57,7 +56,7 @@ public class VampireSlash : Action, IEffect, ITarget, IStateDependent, IBuff
     public Status? self_newStatus { get; protected set; }
     public virtual Stats GetSelfModifiedStats(BaseState state)
     {
-        Stats newStats = state.stats;
+        Stats newStats = new Stats(state.stats);
 
         newStats.MaxHP = (int)(self_maxHP_mult * newStats.MaxHP + self_maxHP_d);
         newStats.HP = (int)(self_curHP_mult * newStats.HP + self_curHP_d);
@@ -72,9 +71,13 @@ public class VampireSlash : Action, IEffect, ITarget, IStateDependent, IBuff
     public override void Fire(float cr)
     {
         if(!isAvailable)
+        {
+            state.busy = false;
             return;
+        }
         this.cr = cr;
         animResolver.ChangeStatus(status);
+        state.busy = false;
         StartCoroutine(StartCooldown(cr));
     }
     public override void UseOnState(BaseState state, float cr)
@@ -89,9 +92,10 @@ public class VampireSlash : Action, IEffect, ITarget, IStateDependent, IBuff
             targetAnimResolver = other.gameObject.GetComponent<BaseAnimResolver>();
             targetAnimResolver.ChangeStatus(targetStatus);
             UseOnState(other.gameObject.GetComponent<BaseState>(), cr);
+            agent.AddReward(reward);
         }
     }
-    void Start() 
+    void Awake() 
     {
         curHP_d = 0;
         curHP_mult = 1f;
@@ -121,7 +125,7 @@ public class VampireSlash : Action, IEffect, ITarget, IStateDependent, IBuff
         self_CR_mult = 1f;
         self_newStatus = null;
 
-        cooldown = 3;
+        cooldown = 5;
         isAvailable = true;
 
         status = ActionStatus.ATTACK;
@@ -129,16 +133,50 @@ public class VampireSlash : Action, IEffect, ITarget, IStateDependent, IBuff
     }
     void Update() 
     {
-        curHP_d = -state.stats.AD;
-        self_curHP_d = state.stats.AD;
+        curHP_d = (int)(-state.stats.AD * 1.2f);
+        self_curHP_d = (int)(curHP_d * 0.8f);
+        reward = (-curHP_d + self_curHP_d) / 100f;
     }
     public override Action Initialize(GameObject obj) 
     {
         animResolver = obj.GetComponent<BaseAnimResolver>();
         state = obj.GetComponent<BaseState>();
-        curHP_d = -state.stats.AD;
-        self_curHP_d = state.stats.AD;
-
+        agent = obj.GetComponent<BaseAgent>();
+        curHP_d = (int)(-state.stats.AD * 1.2f);
+        self_curHP_d = (int)(curHP_d * 0.8f);
+        reward = (-curHP_d + self_curHP_d) / 100f;
         return this;
+    }
+
+    public override float[] Serialize()
+    {
+        float[] row = Mappings.DefaultSkillRow;
+        row[1] = (isAvailable ? 1f : 0f);
+        row[4] = curHP_d;
+        row[5] = curHP_mult;
+        row[6] = maxHP_d;
+        row[7] = maxHP_mult;
+        row[8] = AD_d;
+        row[9] = AD_mult;
+        row[10] = MS_d;
+        row[11] = MS_mult;
+        row[12] = AS_d;
+        row[13] = AS_mult;
+        row[14] = CR_d;
+        row[15] = CR_mult;
+        row[16] = newStatus is null ? 0f : (float)(int)newStatus;
+        row[17] = self_curHP_d;
+        row[18] = self_curHP_mult;
+        row[19] = self_maxHP_d;
+        row[20] = self_maxHP_mult;
+        row[21] = self_AD_d;
+        row[22] = self_AD_mult;
+        row[23] = self_MS_d;
+        row[24] = self_MS_mult;
+        row[25] = self_AS_d;
+        row[26] = self_AS_mult;
+        row[27] = self_CR_d;
+        row[28] = self_CR_mult;
+        return row; 
     }
 }
